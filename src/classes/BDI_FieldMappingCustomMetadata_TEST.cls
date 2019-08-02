@@ -88,5 +88,32 @@ private class BDI_FieldMappingCustomMetadata_TEST {
         System.assertEquals(BDI_FieldMappingCustomMetadata.DEFAULT_DATA_IMPORT_FIELD_MAPPING_SET_NAME,dis2.Default_Data_Import_Field_Mapping_Set__c);
 
     }
-    
+
+    /**
+     * @description Validates that the Data_Import_Field_Mapping__mdt records are accessible.
+     */
+    @IsTest
+    static void shouldConfirmDataImportFieldMappingsArePresent() {
+        List<Data_Import_Field_Mapping__mdt> dataImportFieldMappings = [
+                SELECT MasterLabel,
+                        DeveloperName,
+                        Data_Import_Field_Mapping_Set__c,
+                        Data_Import_Field_Mapping_Set__r.DeveloperName,
+                        Required__c,
+                        Source_Field_API_Name__c,
+                        Target_Field_API_Name__c,
+                        Target_Object_Mapping__c,
+                        Target_Object_Mapping__r.DeveloperName,
+                        Target_Object_Mapping__r.Object_API_Name__c,
+                        Target_Object_Mapping__r.Legacy_Data_Import_Object_Name__c,
+                        Is_Deleted__c,
+                        Target_Object_Mapping__r.Data_Import_Object_Mapping_Set__r.DeveloperName
+                FROM Data_Import_Field_Mapping__mdt
+                WHERE Is_Deleted__c = false
+                AND Target_Object_Mapping__r.Is_Deleted__c = false
+        ];
+
+        System.assert(dataImportFieldMappings.size() > 0,
+                'Packaged Data_Import_Field_Mapping__mdt records should be deployed and accessible.');
+    }
 }
