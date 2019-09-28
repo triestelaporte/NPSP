@@ -132,8 +132,8 @@ BGE/BDI Import - HT - 120000 / 250 - 3.5 Objs/DI - 7.5 Objs/DI - 0.75 New Acc 0.
     [Tags]    long     help-text
     Batch Data Import   250
 
-BGE/BDI Import - CO - 1000000 / 250 - 7.5 Objs/DI - 0.75 New Acc 0.25 Mtchd Acc 0.25 New Con 0.25 Mtchd Con 1CO1 0.5CO2 1CO3 1Payment 1Allocation 0.5ASC 1 Opp
-    [Setup]     Setup For Test    1000000    Data Import Field Mapping
-    [Teardown]     Validate Data      1000000
+BGE/BDI Import - CO - 10000000 / 250 - 7.5 Objs/DI - 0.75 New Acc 0.25 Mtchd Acc 0.25 New Con 0.25 Mtchd Con 1CO1 0.5CO2 1CO3 1Payment 1Allocation 0.5ASC 1 Opp
+    [Setup]     Setup For Test    10000000    Data Import Field Mapping
+    [Teardown]     Validate Data      10000000
     [Tags]    ultra-long     advanced-mapping
     Batch Data Import   250
