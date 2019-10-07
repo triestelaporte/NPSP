@@ -1,8 +1,7 @@
 import os
 from cumulusci.tasks.salesforce import BaseSalesforceApiTask
 from cumulusci.tasks.bulkdata import LoadData
-from cumulusci.core.utils import ordered_yaml_load
-from cumulusci.utils import convert_to_snake_case, temporary_dir
+from cumulusci.utils import temporary_dir
 from cumulusci.core.config import TaskConfig
 from cumulusci.core.utils import import_global
 
@@ -26,11 +25,11 @@ class GenerateAndLoadData(BaseSalesforceApiTask):
             "description": "How many records to create and load at a time..",
             "required": False},
         "mapping": {"description": "A mapping YAML file to use",
-                         "required": True},
+                    "required": True},
         "data_generation_task": {"description": "Fully qualified class path of a task to generate the data. Use cumulusci.tasks.bulkdata.factory_generator if you would like to use a Factory Module.",
-                         "required": False},
+                                 "required": False},
         "data_generation_options": {"description": "Options to pass to the data generator.",
-                         "required": False},
+                                    "required": False},
         "database_url": {"description": "A URL to store the database (defaults to a transient SQLite file)",
                          "required": ""},
     }
@@ -49,22 +48,15 @@ class GenerateAndLoadData(BaseSalesforceApiTask):
                 self._generate_batch(database_url, tempdir,
                                      mapping_file, batch_size, i)
 
-    def _generate_batch(self, database_url, tempdir, mapping_file, batch_size, index):
-        if not database_url:
-            sqlite_path = os.path.join(tempdir, f"generated_data_{index}.db")
-            database_url = f"sqlite:///" + sqlite_path
-
-        subtask_options = {**self.options, "mapping": mapping_file,
-                                           "database_url": database_url,
-                                           "num_records": batch_size}
+    def _datagen(self, subtask_options):
         class_path = self.options.get("data_generation_task", None)
         task_class = import_global(class_path)
         task_config = TaskConfig({"options": subtask_options})
         data_gen_task = task_class(self.project_config, task_config, org_config=self.org_config)
         data_gen_task()
 
-        subtask_config = TaskConfig({"options": subtask_options,
-                                     "num_records": batch_size})
+    def _dataload(self, subtask_options):
+        subtask_config = TaskConfig({"options": subtask_options})
         subtask = LoadData(
             project_config=self.project_config,
             task_config=subtask_config,
@@ -74,3 +66,13 @@ class GenerateAndLoadData(BaseSalesforceApiTask):
             stepnum=self.stepnum,
         )
         subtask()
+
+    def _generate_batch(self, database_url, tempdir, mapping_file, batch_size, index):
+        if not database_url:
+            sqlite_path = os.path.join(tempdir, f"generated_data_{index}.db")
+            database_url = f"sqlite:///" + sqlite_path
+        subtask_options = {**self.options, "mapping": mapping_file,
+                                           "database_url": database_url,
+                                           "num_records": batch_size}
+        self._datagen(subtask_options)
+        self._dataload(subtask_options)
