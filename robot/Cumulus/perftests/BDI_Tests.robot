@@ -30,7 +30,7 @@ Generate Data
 
     Run Task Class   tasks.generate_and_load_data.GenerateAndLoadData
     ...                 num_records=${count}
-    ...                 batch_size=${10000}
+    ...                 batch_size=${500000}
 #    ...                 database_url=sqlite:////tmp/temp_db.db  # turn this on to look at the DB for debugging
     ...                 mapping=datasets/bdi_benchmark/mapping.yml
     ...                 data_generation_task=${data_generation_task}
