@@ -2,7 +2,7 @@ import math
 from datetime import date, datetime
 
 import factory
-from cumulusci.tasks.bulkdata.factory_utils import Adder, ModuleDataFactory, Models
+from cumulusci.tasks.bulkdata.factory_utils import Adder, ModuleDataFactory, Models, Factories
 
 
 def now():
@@ -142,3 +142,25 @@ class GAU(factory.alchemy.SQLAlchemyModelFactory):
         model = Models.General_Accounting_Unit__c
 
     id = factory.Sequence(lambda n: n + 1)
+
+
+def _add_session(fact, session, orm_classes):
+    "Attach the session to the factory"
+    fact._meta.sqlalchemy_session = session
+    fact._meta.sqlalchemy_session_persistence = None
+
+    # if the model is just a string name, find a real class that matches
+    # that name
+    if isinstance(fact._meta.model, str):
+        try:
+            fact._meta.model = orm_classes[fact._meta.model]
+        except KeyError:
+            raise KeyError(
+                "ORM Class not found matching %s. Check mapping.yml"
+                % fact._meta.model
+            )
+
+    return fact
+
+
+Factories.add_session = staticmethod(_add_session)
