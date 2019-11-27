@@ -438,6 +438,17 @@ public class UTIL_UnitTestData_TEST {
     }
 
     /**
+     * @description Returns Organization Account
+     * @return Account
+     */
+    public static Account getOrgAccount() {
+        return new Account(
+            Name = UTIL_UnitTestData_TEST.getUniqueString(),
+            npe01__SYSTEMIsIndividual__c = false
+        );
+    }
+
+    /**
      * @description Create Engagement Plan Templates for unit testing.
      * @param n The number of Engagement Plan Templates to be created
      * @return List of Engagement Plan Templates
