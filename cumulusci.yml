@@ -705,11 +705,19 @@ flows:
         steps:
             1:
                 flow: qa_org
-            3:
-                task: test_performance
+            4:
+                task: run_tests
                 options:
-                    include: medium
-                    vars: persistent_org:False
+                    test_name_match: BDI_AdditionalObjectService_TEST
+            5:
+                task: run_tests
+                options:
+                    test_name_match: USER_UserService_TEST
+            6:
+                task: run_tests
+                options:
+                    test_name_match: CRLP_RollupAccount_TEST
+
 
     test_performance_LDV:
         description: 'Runs BDI performance tests against a pre-existing org'
