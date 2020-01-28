@@ -717,10 +717,11 @@ flows:
                 task: run_tests
                 options:
                     test_name_match: USER_UserService_TEST
-            6:
+            10:                 # this number is special
                 task: run_tests
                 options:
                     test_name_match: CRLP_RollupAccount_TEST
+
 
 
     test_performance_LDV:
