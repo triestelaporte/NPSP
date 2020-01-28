@@ -705,6 +705,9 @@ flows:
         steps:
             1:
                 flow: qa_org
+            3:  task: test_performance
+                options:
+                    include: None
             4:
                 task: run_tests
                 options:
