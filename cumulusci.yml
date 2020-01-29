@@ -42,6 +42,24 @@ tasks:
         options:
             path: ldv_tests/src
 
+    generate_data_from_yaml:
+        description: Generate data from a file using Snowfakery
+        class_path: cumulusci.tasks.bulkdata.generate_from_yaml.GenerateDataFromYaml
+
+    generate_rd_data:
+        class_path: cumulusci.tasks.bulkdata.generate_from_yaml.GenerateDataFromYaml
+        options:
+            generator_yaml: datasets/rd2_pilot/rd_ldv_factory.yml
+
+    generate_and_load_from_yaml:
+        description: Generate data from a file using Snowfakery and load to SF Org
+        class_path: cumulusci.tasks.bulkdata.generate_and_load_data_from_yaml.GenerateAndLoadDataFromYaml
+
+    generate_and_load_rd_data:
+        class_path: cumulusci.tasks.bulkdata.generate_and_load_data_from_yaml.GenerateAndLoadDataFromYaml
+        options:
+            generator_yaml: datasets/rd2_pilot/rd_ldv_factory.yml
+
     deploy_dev_config:
         description: Deploys the post-install configuration for an unmanaged DE org
         class_path: cumulusci.tasks.salesforce.Deploy
@@ -156,7 +174,7 @@ tasks:
 
     test_performance:
         description: Runs Robot Framework performance tests for BDI Complex Objects
-        class_path: cumulusci.tasks.robotframework.Robot
+        class_path: tasks.norobot.NoRobot
         group: Performance Tests
         options:
             suites: robot/Cumulus/perftests/
@@ -716,6 +734,8 @@ flows:
                 task: test_performance
                 options:
                     include: None
+                    options:
+                        include: None
             4:
                 task: run_tests
                 options:
