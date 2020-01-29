@@ -739,7 +739,7 @@ flows:
             10:         # this number is special
                 task: run_tests
                 options:
-                    test_name_match: BDI_AdditionalObjectService_TEST,USER_UserService_TEST,CRLP_RollupAccount_TEST
+                    test_name_match: BDI_AdditionalObjectService_TEST,USER_UserService_TEST,CRLP_RollupAccount_TEST,RP_GettingStartedTest,ERR_Handler_TEST,UTIL_RecordTypeSettingsUpdate_TEST,UTIL_OrgTelemetry_TEST,RD2_OpportunityEvaluation_TEST,ADV_Adapter_TEST,ERR_Notifier_TEST,OPP_SendAcknowledgmentBTN_TEST
 
 
     test_performance_LDV:
