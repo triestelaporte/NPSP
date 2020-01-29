@@ -736,19 +736,10 @@ flows:
                     include: None
                     options:
                         include: None
-            4:
+            10:         # this number is special
                 task: run_tests
                 options:
-                    test_name_match: BDI_AdditionalObjectService_TEST
-            5:
-                task: run_tests
-                options:
-                    test_name_match: USER_UserService_TEST
-            10:                 # this number is special
-                task: run_tests
-                options:
-                    test_name_match: CRLP_RollupAccount_TEST
-
+                    test_name_match: BDI_AdditionalObjectService_TEST,USER_UserService_TEST,CRLP_RollupAccount_TEST
 
 
     test_performance_LDV:
