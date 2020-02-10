@@ -23,6 +23,15 @@
             "c/pubsubNoPageRef": [
                 "pubsubNoPageRef/pubsubNoPageRef.js"
             ],
+            "c/rdActiveSchedule": [
+                "rdActiveSchedule/rdActiveSchedule.js"
+            ],
+            "c/rdScheduleVisualizer": [
+                "rdScheduleVisualizer/rdScheduleVisualizer.js"
+            ],
+            "c/util": [
+                "util/util.js"
+            ],
             "c/utilPlatformEventListener": [
                 "utilPlatformEventListener/utilPlatformEventListener.js"
             ],

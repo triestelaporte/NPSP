@@ -385,6 +385,26 @@ public class UTIL_UnitTestData_TEST {
         return accountsToAdd;
     }
 
+    /**
+     * @description Builds an Organization Account
+     * @return Account
+     */
+    public static Account buildOrganizationAccount() {
+        return new Account(
+            Name = getUniqueString(),
+            npe01__SYSTEMIsIndividual__c = false
+        );
+    }
+
+    /***
+    * @description Builds a Household Account
+    * @return Account
+    */
+    public static Account buildHouseholdAccount() {
+        return createMultipleTestAccounts(1, CAO_Constants.HH_ACCOUNT_TYPE)[0];
+    }
+
+
     public static List<Account> listAccT;
     public static List<Contact> listConT;
 
@@ -399,8 +419,8 @@ public class UTIL_UnitTestData_TEST {
     **********************************************************************************************************/
     public static void createAccountContactTestData(String accType, Integer cAcc, Integer cCon, Integer iUnique) {
 
-        listConT = UTIL_UnitTestData_TEST.createMultipleTestContacts(cAcc * cCon);
-        listAccT = UTIL_UnitTestData_TEST.createMultipleTestAccounts(cAcc, accType);
+        listConT = createMultipleTestContacts(cAcc * cCon);
+        listAccT = createMultipleTestAccounts(cAcc, accType);
         insert listAccT;
 
         for (Integer i = 0; i < cAcc; i++) {
@@ -777,7 +797,7 @@ public class UTIL_UnitTestData_TEST {
     public static void disableHHNamingTriggers() {
         createDefaultTDTMHandlers();
         TDTM_ProcessControl.toggleTriggerState('Contact', 'HH_Households_TDTM', false);
-        UTIL_UnitTestData_TEST.turnOffAutomaticHHNaming();
+        turnOffAutomaticHHNaming();
     }
     /* @description Disable all HH Naming related trigger handlers and setting when not needed to improve performance */
     public static void disableAddressTriggers() {
@@ -786,7 +806,7 @@ public class UTIL_UnitTestData_TEST {
         TDTM_ProcessControl.toggleTriggerState('Contact', 'ADDR_Contact_TDTM', false);
         TDTM_ProcessControl.toggleTriggerState(UTIL_Namespace.StrTokenNSPrefix('Address__c'), 'ADDR_Addresses_TDTM', false);
         TDTM_ProcessControl.toggleTriggerState(UTIL_Namespace.StrTokenNSPrefix('Address__c'), 'ADDR_Validator_TDTM', false);
-        UTIL_UnitTestData_TEST.turnOffAutomaticHHNaming();
+        turnOffAutomaticHHNaming();
     }
 
     /**
@@ -805,21 +825,12 @@ public class UTIL_UnitTestData_TEST {
     // Miscellaneous Utility Methods specifically for ue in Unit Tests
     // =====================================================================================================
 
-    /*********************************************************************************************************
-    * @description Extracts Ids of sObjects
-    * @param sObjects List of sObjects
-    * @return Set<Id> Set of sObjects' Ids
-    **********************************************************************************************************/
-    public static Set<Id> extractIds(List<sObject> sObjects) {
-        return (new Map<Id, sObject>(sObjects)).keySet();
-    }
-
-    /*********************************************************************************************************
+    /***
     * @description Sets the Fixed Search Results to the Ids of the sObjects
     * @param sObjects List of sObjects
-    **********************************************************************************************************/
+    */
     public static void setFixedSearchResults(List<sObject> sObjects) {
-        Test.setFixedSearchResults(new List<Id>(extractIds(sObjects)));
+        Test.setFixedSearchResults(new List<Id>(UTIL_SObject.extractIds(sObjects)));
     }
 
     /**
@@ -851,7 +862,7 @@ public class UTIL_UnitTestData_TEST {
         set;
     }
 
-    /*******************************************************************************************************************
+    /***
     * @description Ensures that mockIds() does not produce the same ID twice
     */
     private static Integer dummyIdCounter {
@@ -865,14 +876,14 @@ public class UTIL_UnitTestData_TEST {
         set;
     }
 
-    /*******************************************************************************************************************
+    /***
     * @description Generates a mock Id for an sObject
     */
     public static Id mockId(SObjectType sObjectType) {
         return mockIds(sObjectType, 1)[0];
     }
 
-    /*******************************************************************************************************************
+    /***
     * @description Generates mock Ids for an sObject
     */
     public static List<Id> mockIds(SObjectType sObjectType, Integer size) {
@@ -887,7 +898,7 @@ public class UTIL_UnitTestData_TEST {
         return ids;
     }
 
-    /*******************************************************************************************************************
+    /***
     * @description Sets mock Ids for a list of sObjects
     */
     public static void setMockIds(List<SObject> records) {

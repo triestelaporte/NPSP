@@ -37,8 +37,15 @@
 @isTest(IsParallel=true)
 public with sharing class UTIL_BatchJobService_TEST {
     public static final Id MOCK_BATCH_ID = '707f100007HyXHJAA3';
-
 	private static final String TIME_ELAPSED_DAYS = System.Label.BatchProgressTimeElapsedDays;
+
+    /****
+    * @description Creates data required for unit tests
+    */
+    @TestSetup
+    private static void setUp() {
+        insert UTIL_UnitTestData_TEST.getContact();
+    }
 
     /***
     * @description Verifies the constructor throws an error when the batch job input argument is null
@@ -54,7 +61,7 @@ public with sharing class UTIL_BatchJobService_TEST {
         }
 
         System.assertNotEquals(null, actual, 'An exception should be thrown');
-        System.assertEquals(UTIL_BatchJobService.BATCH_JOB_REQUIRED, 
+        System.assertEquals(UTIL_BatchJobService.BATCH_JOB_REQUIRED,
             actual.getMessage(), 'Exception message should match');
     }
 
@@ -82,11 +89,11 @@ public with sharing class UTIL_BatchJobService_TEST {
     * @description Verifies batch job elapsed time is calculated as difference between start and completion date.
     * If the completion date is null, the difference is calculated using the current datetime.
     */
-    @isTest 
+    @isTest
     private static void shouldCalculateTimeElapsed() {
         AsyncApexJob job = buildAsyncApexJob();
         UTIL_BatchJobService.BatchJob batchJob = new UTIL_BatchJobService.BatchJob(job);
-        
+
         DateTime startDate = DateTime.newInstance(2018, 01, 30, 15, 20, 40);
         DateTime endDate = DateTime.newInstance(2018, 01, 30, 18, 20, 40);
         System.assertEquals('03:00:00', batchJob.calcTimeElapsed(startDate, endDate));
@@ -111,7 +118,7 @@ public with sharing class UTIL_BatchJobService_TEST {
     private static void shouldUseCurrentDateToCalculateTimeElapsedForInProgressBatch() {
         AsyncApexJob job = buildAsyncApexJob();
         UTIL_BatchJobService.BatchJob batchJob = new UTIL_BatchJobService.BatchJob(job);
-        
+
         DateTime startDate = DateTime.newInstance(2018, 01, 30, 15, 20, 40);
         DateTime endDate = null;
         String actual = batchJob.calcTimeElapsed(startDate, endDate);
@@ -131,7 +138,7 @@ public with sharing class UTIL_BatchJobService_TEST {
 
         Integer jobItemsProcessed = 0;
         Integer totalJobItems = 100;
-        
+
         String status = UTIL_BatchJobService.ApexJobStatus.HOLDING.name();
         Long percentComplete = batchJob.calcPercentComplete(jobItemsProcessed, totalJobItems, status);
         System.assertEquals(defaultPercentage, percentComplete);
@@ -143,7 +150,7 @@ public with sharing class UTIL_BatchJobService_TEST {
         status = UTIL_BatchJobService.ApexJobStatus.PREPARING.name();
         percentComplete = batchJob.calcPercentComplete(jobItemsProcessed, totalJobItems, status);
         System.assertEquals(10, percentComplete);
-        
+
         jobItemsProcessed = 75;
         status = UTIL_BatchJobService.ApexJobStatus.PROCESSING.name();
         percentComplete = batchJob.calcPercentComplete(jobItemsProcessed, totalJobItems, status);
@@ -163,6 +170,179 @@ public with sharing class UTIL_BatchJobService_TEST {
         System.assertEquals(100, percentComplete);
     }
 
+
+    /***
+    * @description Verifies batch job summary is set correctly
+    */
+    @isTest
+    private static void shouldSetBatchJobSummary() {
+        Integer total = 100;
+        Integer processed = 80;
+        Integer failed = 20;
+
+        UTIL_BatchJobService.JobSummary summary =
+            new UTIL_BatchJobService.JobSummary(MOCK_BATCH_ID)
+            .withTotalRecords(total)
+            .withTotalRecordsProcessed(processed)
+            .withTotalRecordsFailed(failed);
+
+        System.assertEquals(MOCK_BATCH_ID, summary.batchId, 'Batch Id should match');
+        System.assertEquals(total, summary.total, 'Total Records should match');
+        System.assertEquals(processed, summary.processed, 'Total Records Processed should match');
+        System.assertEquals(failed, summary.failed, 'Total Records Failed should match');
+    }
+
+    /**
+     * @description Verifies Enhanced Recurring Donations migration batch job summary is returned
+     */
+    @IsTest
+    private static void shouldReturnEnhancedRDMigrationSummary() {
+        setRDSettings();
+
+        insert getLegacyRecurringDonationBuilder(getContact().Id).build();
+
+        RD2_EnablementService_TEST.setRecurringDonations2Enabled();
+
+        Test.startTest();
+        Id jobId = Database.executeBatch(new RD2_DataMigration_BATCH());
+        Test.stopTest();
+
+        assertBatchJobSummary(jobId, 'RD2_DataMigration_BATCH');
+    }
+
+    /**
+     * @description Verifies Enhanced Recurring Donations dry run migration batch job summary is returned
+     */
+    @IsTest
+    private static void shouldReturnEnhancedRDDryRunMigrationSummary() {
+        setRDSettings();
+
+        insert getLegacyRecurringDonationBuilder(getContact().Id).build();
+
+        RD2_EnablementService_TEST.setRecurringDonations2Enabled();
+
+        Test.startTest();
+        Id jobId = Database.executeBatch(new RD2_DataMigrationDryRun_BATCH());
+        Test.stopTest();
+
+        assertBatchJobSummary(jobId, 'RD2_DataMigrationDryRun_BATCH');
+    }
+
+    /***
+    * @description Asserts batch job summary
+    * @param className Class Name
+    * @return void
+    */
+    private static void assertBatchJobSummary(Id jobId, String className) {
+        UTIL_BatchJobService.BatchJob batchJob = getBatchJob(className);
+        System.assertNotEquals(null, batchJob, 'Batch Job should be returned');
+        System.assertNotEquals(null, batchJob.summary, 'Batch Job summary should be returned');
+
+        System.assertEquals(jobId, batchJob.summary.batchId, 'Batch Id should match: ' + batchJob.summary);
+        System.assertEquals(1, batchJob.summary.total, 'Total Records should match: ' + batchJob.summary);
+        System.assertEquals(1, batchJob.summary.processed, 'Total Records Processed should match: ' + batchJob.summary);
+        System.assertEquals(0, batchJob.summary.failed, 'Total Records Failed should match: ' + batchJob.summary);
+    }
+
+
+    /***
+    * @description Builds an AsyncApexJob and sets attributes that are not writable otherwise
+    */
+    public class TestAsyncApexJob {
+        private Map<String, Object> valuesByFieldName;
+
+        /***
+        * @description Constructor sets default values
+        */
+        public TestAsyncApexJob() {
+            valuesByFieldName = new Map<String, Object>();
+
+            //defaults
+            valuesByFieldName.put('Status', UTIL_BatchJobService.ApexJobStatus.COMPLETED.name());
+            valuesByFieldName.put('CreatedDate', DateTime.newInstance(2018, 01, 31, 15, 10, 45));
+            valuesByFieldName.put('CompletedDate', DateTime.newInstance(2018, 2, 3, 15, 10, 45));
+            valuesByFieldName.put('JobItemsProcessed', 75);
+            valuesByFieldName.put('TotalJobItems', 75);
+        }
+
+        /***
+        * @description Sets the batch job Id to the Mock Id
+        * @return TestAsyncApexJob
+        */
+        public TestAsyncApexJob withMockId() {
+            return withId(MOCK_BATCH_ID);
+        }
+
+        /***
+        * @description Sets the batch job Id
+        * @param batchId
+        * @return TestAsyncApexJob
+        */
+        public TestAsyncApexJob withId(Id batchId) {
+            valuesByFieldName.put('Id', batchId);
+            return this;
+        }
+
+        /***
+        * @description Sets Created By for the batch job
+        * @param usr
+        * @return TestAsyncApexJob
+        */
+        public TestAsyncApexJob withCreatedBy(User usr) {
+            valuesByFieldName.put('CreatedBy', usr);
+            return this;
+        }
+
+        /***
+        * @description Sets the batch status
+        * @param status
+        * @return TestAsyncApexJob
+        */
+        public TestAsyncApexJob withStatus(String status) {
+            valuesByFieldName.put('Status', status);
+            return this;
+        }
+
+        /***
+        * @description Builds AsyncApexJob SObject based on the provided values
+        * @return TestAsyncApexJob
+        */
+        public AsyncApexJob build() {
+            String jsonString = JSON.serialize(valuesByFieldName);
+
+            return (AsyncApexJob) JSON.deserialize(jsonString, AsyncApexJob.class);
+        }
+    }
+
+    /***
+    * @description Database.BatchableContext Mock class
+    */
+    public class MockBatchableContext implements Database.BatchableContext {
+        private Id jobId;
+        private Id childJobId;
+
+        public MockBatchableContext() {
+            jobId = MOCK_BATCH_ID;
+        }
+
+        public MockBatchableContext returnJobId(Id jobId) {
+            this.jobId = jobId;
+            return this;
+        }
+
+        public MockBatchableContext returnChildJobId(Id childJobId) {
+            this.childJobId = childJobId;
+            return this;
+        }
+
+        public Id getJobId() {
+            return jobId;
+        }
+
+        public Id getChildJobId() {
+            return childJobId;
+        }
+    }
 
 
     // Helpers
@@ -187,75 +367,61 @@ public with sharing class UTIL_BatchJobService_TEST {
         return [SELECT Id, Name FROM User WHERE Id = :UserInfo.getUserId()];
     }
 
-
-    /***
-    * @description Builds an AsyncApexJob and sets attributes that are not writable otherwise
+    /****
+    * @description Returns contact record
+    * @return Contact
     */
-    public class TestAsyncApexJob {
-        private Map<String, Object> valuesByFieldName;
-
-        /***
-        * @description Constructor sets default values
-        */
-        public TestAsyncApexJob() {
-            valuesByFieldName = new Map<String, Object>();
-            
-            //defaults
-            valuesByFieldName.put('Status', UTIL_BatchJobService.ApexJobStatus.COMPLETED.name());
-            valuesByFieldName.put('CreatedDate', DateTime.newInstance(2018, 01, 31, 15, 10, 45));
-            valuesByFieldName.put('CompletedDate', DateTime.newInstance(2018, 2, 3, 15, 10, 45));
-            valuesByFieldName.put('JobItemsProcessed', 75);
-            valuesByFieldName.put('TotalJobItems', 75);
-        }
-
-        /***
-        * @description Sets the batch job Id to the Mock Id
-        * @return TestAsyncApexJob
-        */
-        public TestAsyncApexJob withMockId() {
-            return withId(MOCK_BATCH_ID);
-        }
-
-        /***
-        * @description Sets the batch job Id
-        * @param batchId 
-        * @return TestAsyncApexJob
-        */
-        public TestAsyncApexJob withId(Id batchId) {
-            valuesByFieldName.put('Id', batchId);
-            return this;
-        }
-
-        /***
-        * @description Sets Created By for the batch job
-        * @param usr 
-        * @return TestAsyncApexJob
-        */
-        public TestAsyncApexJob withCreatedBy(User usr) {
-            valuesByFieldName.put('CreatedBy', usr);
-            return this;
-        }
-
-        /***
-        * @description Sets the batch status
-        * @param status 
-        * @return TestAsyncApexJob
-        */
-        public TestAsyncApexJob withStatus(String status) {
-            valuesByFieldName.put('Status', status);
-            return this;
-        }
-
-        /***
-        * @description Builds AsyncApexJob SObject based on the provided values
-        * @return TestAsyncApexJob
-        */
-        public AsyncApexJob build() {
-            String jsonString = JSON.serialize(valuesByFieldName);
-                
-            return (AsyncApexJob) JSON.deserialize(jsonString, AsyncApexJob.class);
-        }
-
+    private static Contact getContact() {
+        return [
+            SELECT FirstName, LastName, AccountId
+            FROM Contact
+            LIMIT 1
+        ];
     }
+
+    /**
+     * @description Sets RD Settings 
+     * @return void
+     */
+    private static void setRDSettings() {
+        UTIL_CustomSettingsFacade.getRecurringDonationsSettingsForTest(
+            new npe03__Recurring_Donations_Settings__c(
+                npe03__Open_Opportunity_Behavior__c = RD2_Constants.CloseActions.Mark_Opportunities_Closed_Lost.name(),
+                npe03__Maximum_Donations__c = 50,
+                npe03__Opportunity_Forecast_Months__c = 6
+            )
+        );
+    }
+
+    /**
+     * @description Instantiate a legacy recurring donation for a specific ContactId
+     * @param contactId
+     * @return TEST_RecurringDonationBuilder New Recurring Donation builder
+     */
+    private static TEST_RecurringDonationBuilder getLegacyRecurringDonationBuilder(Id contactId) {
+        return TEST_RecurringDonationBuilder.constructLegacyBuilder()
+            .withId(null)
+            .withDateEstablished(Date.today().addMonths(-1))
+            .withOpenEndedStatusOpen()
+            .withContact(contactId)
+            .withAmount(100)
+            .withInstallmentPeriodMonthly()
+            .withDayOfMonth('1');
+    }
+
+    /**
+     * @description Returns batch job wrapper
+     * @param className Class name
+     * @return UTIL_BatchJobService.BatchJob
+     */
+    private static UTIL_BatchJobService.BatchJob getBatchJob(String className) {
+        String jsonBatchJob = UTIL_BatchJobProgress_CTRL.loadBatchJob(className);
+        System.assert(String.isNotBlank(jsonBatchJob), 'Batch job details should be retrieved');
+
+        return (UTIL_BatchJobService.BatchJob) JSON.deserialize(
+            jsonBatchJob, UTIL_BatchJobService.BatchJob.class
+        );
+    }
+
 
 }

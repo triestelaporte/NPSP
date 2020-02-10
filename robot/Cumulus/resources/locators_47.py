@@ -16,6 +16,7 @@ npsp_lex_locators={
     },
     "record": {
         'button': "//div[@class='actionsContainer']/button[@title='{}']",
+        'footer':"//div[@class='footer active' or contains(@class,'footer-visible')]",
         'datepicker':"//div[contains(@class,'uiDatePickerGrid')]/table[@class='calGrid']//span[text()='{}']",
         'month_pick':"//div[@class='dateBar']//a[@title='{}']",
         'edit_button':'//*[@title="{}"]',
@@ -32,9 +33,9 @@ npsp_lex_locators={
             'viewall':'//a[.//span[text()="View All"]/span[text()="{}"]]',
             'item':"//article[contains(@class, 'forceRelatedListCardDesktop')][.//img][.//span[@title='{}']]//h3//a",
             'field_value': '//a[text()="{}"]/ancestor::li//div[contains(@class, "slds-item--detail")]//*[text()="{}"]',
-            'link':"//article[contains(@class, 'forceRelatedListCardDesktop')][.//img][.//span[@title='{}']]//table[contains(@class,'forceRecordLayout')]/tbody/tr[.//th/div/a[contains(@class,'textUnderline')]][.//td//span[text()='{}']]/th//a",
+            'link':"//article[contains(@class, 'forceRelatedListCardDesktop')][.//img][.//span[@title='{}']]//table[contains(@class,'forceRecordLayout')]/tbody/tr[.//th/div/a[contains(@class,'textUnderline')]][.//td//a[text()='{}']]/th//a",
             'dd-link':'//div[contains(@class,"actionMenu")]//a[@title="{}"]',
-            'allocations':"//article[contains(@class, 'forceRelatedListCardDesktop')][.//img][.//span[@title='{}']]//tbody/tr[./td/a[text()='{}']]/td/span[text()='{}']",
+            'allocations':"//article[contains(@class, 'forceRelatedListCardDesktop')][.//img][.//span[@title='{}']]//tbody/tr[./td//a[text()='{}']]/td/span[text()='{}']",
          },
     },
     "alert": "//span[contains(@class,'toastMessage')]/a",
@@ -43,6 +44,7 @@ npsp_lex_locators={
     'popup': "//div[contains(@class, 'uiPopupTarget')][contains(@class, 'visible')]",
     'flexipage-popup':"//div[contains(@class, 'slds-is-open')][contains(@class, 'slds-combobox')]",
     'test':'/html/body/div[6]/table/tbody/tr[23]/td[1]/a',
+    "toast-msg":"//span[@class='toastMessage slds-text-heading--small forceActionsText']",
     "toast-close":"//button[contains(@class,'toastClose')]",
     'frame_new':'//iframe[contains(@name, "{}") or contains(@title, "{}")]',
     'frame':'//iframe[@title= "{}"]',
@@ -65,10 +67,14 @@ npsp_lex_locators={
     },
     'desktop_rendered': 'css: div.desktop.container.oneOne.oneAppLayoutHost[data-aura-rendered-by]',
     'loading_box': 'css: div.auraLoadingBox.oneLoadingBox',
+    'contacts_actions_dropdown_menu': 'css: a.slds-grid--align-center[aria-expanded="true"]',
+    'household_lookup_dropdown_menu': 'css: div.slds-show',
     'spinner': 'css: div.slds-spinner',
+    'Delete_opportunity_modal_button': 'css: div.forceModalActionContainer button.uiButton--brand',
     'modal_field':"//div[contains(@class, 'lookupInput')][./label[contains(text(), '{}')]]/div//span[@class='lookupInput']/input",
     'name':'//tbody/tr/th/span/a',
     'select_name':'//tbody//a[text()= "{}"]',
+    'opportunities_dropdown':"css:a.slds-button.slds-button--icon-border-filled",
     'locate_dropdown':'//tbody/tr[{}]/td/span//div/a/lightning-icon',
     'locating_delete_dropdown':'//tbody//a[text()= "{}"]/../../following-sibling::td/span//div/a/lightning-icon',
     'related_name':'//tbody/tr/td/a[contains(@class,"forceOutputLookup")]',
@@ -76,6 +82,7 @@ npsp_lex_locators={
     'delete_icon':'//span[contains(text() ,"{}")]/following::span[. = "{}"]/following-sibling::a/child::span[@class = "deleteIcon"]',
     'aff_list':'//div[@role="tablist"]/following::div[@class = "container forceRelatedListSingleContainer"][7]/article/div[@class="slds-card__body"]/div/div/div/div/div/div/div/table/tbody/tr/td[1]',
     'aff_status':'//table[contains(@class,"forceRecordLayout")]/tbody/tr[.//th/div/a[contains(@class,"textUnderline")]][.//td/a[@title="{}"]]/td[3]',
+    'relationship_status':'//lightning-formatted-text[contains(text(),"is")]',
     'aff_id':'//table[contains(@class,"forceRecordLayout")]/tbody/tr[.//th/div/a[contains(@class,"textUnderline")]][.//td/a[@title="{}"]]/th//a',
     'click_aff_id':'//table[contains(@class,"forceRecordLayout")]/tbody/tr/th/div/a[text()="{}"]',
     'confirm': {
@@ -124,6 +131,7 @@ npsp_lex_locators={
     },
     'object':{
         'record':'//tbody//a[text()= "{}"]',
+        "field": "//div[contains(@class, 'uiInput')][.//label[contains(@class, 'uiLabel')][.//span[text()='{}']]]//*[self::input or self::textarea]",
         'button': "css: div.windowViewMode-normal ul.forceActionsContainer.oneActionsRibbon a[title='{}']",
         'radio_button':"//div[contains(@class,'changeRecordTypeRightColumn')]/div/label[@class='slds-radio']/div[.//span[text()='{}']]/preceding::div[1]/span[@class='slds-radio--faux']",
         'field-value':'//tbody/tr[./th//a[text()="{}"]]/td[.//span[text()="{}"]]',
@@ -227,12 +235,16 @@ npsp_lex_locators={
         'button':"//button[text()='Create New Field Mapping']",
         'field-label':'//lightning-formatted-text[text()="{}"]',
         },
+    'modal-form':{
+        'label':'//div[./*/*[text()="{}"]]',
+        },
     
 }
     
 
 extra_locators={
     'related_list_items1':'//div[@class = "forceRelatedListContainer"][.//a[contains(@class, "slds-card")]]//span[text() = "Relationships"]/ancestor::div[contains(@class, "slds-card")]/following-sibling::div[contains(@class, "slds-card")]//tbody//td/span[text()="{}"]',
+    
 }
 dnd={ ""
     }

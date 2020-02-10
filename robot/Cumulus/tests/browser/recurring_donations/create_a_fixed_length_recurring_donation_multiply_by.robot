@@ -42,8 +42,7 @@ Create Fixed Length Recurring Donation Multiply By
     Store Session Record         Opportunity                   ${opportunity1}[0][Id]
     Go To Record Home            ${opportunity1}[0][Id]
     Click Link                   link=Edit
-    Click Dropdown               Stage
-    Click Link                   link=Closed Won
+    Select Value From Dropdown   Stage                          Closed Won
     Click Modal Button           Save
 
     #Find 2nd Opportunity for Recurring Donation and Close It
@@ -51,8 +50,7 @@ Create Fixed Length Recurring Donation Multiply By
     Store Session Record         Opportunity                   ${opportunity2}[0][Id]
     Go To Record Home            ${opportunity2}[0][Id]
     Click Link                   link=Edit
-    Click Dropdown               Stage
-    Click Link                   link=Closed Won
+    Select Value From Dropdown   Stage                          Closed Won
     Click Modal Button           Save
     
 
@@ -65,19 +63,19 @@ Create Fixed Length Recurring Donation Multiply By
 
     #Check Rollups on Recurring Donation
     Go To Record Home            &{recurringdonation}[Id]
-    Confirm Value                Number Of Paid Installments    2         Y
-    Confirm Value                Total Paid Amount              $20.00    Y
+    Navigate To And Validate Field Value          Number Of Paid Installments    contains    2
+    Navigate To And Validate Field Value         Total Paid Amount              contains    $20.00
 
     #Check Soft Credit Rollups on Household Contact
     Go To Record Home            &{householdcontact}[Id]
     Select Tab                   Details
     Scroll Element Into View     text:Household Donation Info
-    Confirm Value                Soft Credit Total              $20.00    Y
-    Confirm Value                Number of Soft Credits         2         Y
+    Navigate To And Validate Field Value          Soft Credit Total              contains    $20.00
+    Navigate To And Validate Field Value          Number of Soft Credits         contains    2
 
     #Check Rollups on Recurring Account
     Go To Record Home            ${account_id}
     Select Tab                   Details
     Scroll Element Into View     text:Membership Information
-    Confirm Value                Total Gifts                    $20.00    Y
-    Confirm Value                Total Number of Gifts          2         Y
+    Navigate To And Validate Field Value         Total Gifts                    contains    $20.00
+    Navigate To And Validate Field Value          Total Number of Gifts          contains    2

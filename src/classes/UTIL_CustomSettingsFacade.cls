@@ -522,7 +522,7 @@ public without sharing class UTIL_CustomSettingsFacade {
         String oldProcessor = '';
         //modified to check again the Id instead of the object
         //get the model they used to be in
-        Schema.DescribeFieldResult F = Schema.sObjectType.Contact.fields.npo02__SystemHouseholdProcessor__c;
+        Schema.DescribeFieldResult F = Schema.SObjectType.Contact.fields.npo02__SystemHouseholdProcessor__c;
         List<Schema.PicklistEntry> P = F.getPicklistValues();
 
         for(Schema.PicklistEntry pe : P){
@@ -588,11 +588,12 @@ public without sharing class UTIL_CustomSettingsFacade {
             settings.npe03__Opportunity_Forecast_Months__c = 12;
             settings.npe03__Update_Check_Interval__c = 90;
             settings.npe03__Open_Opportunity_Behavior__c = RD_RecurringDonations.RecurringDonationCloseOptions.Mark_Opportunities_Closed_Lost.name();
+            settings.DisableRollupsWhenCreatingInstallments__c = false;
 
             settings.EnableAutomaticNaming__c = false;
             settings.IsRecurringDonations2Enabled__c = false;
 
-            List<RecordType> oppRecordTypes = [select id from RecordType where sobjecttype = 'Opportunity' and IsActive = true];
+            List<RecordType> oppRecordTypes = [select id from RecordType where SObjectType = 'Opportunity' and IsActive = true];
             if (oppRecordTypes.size() > 0) {
                 settings.npe03__Record_Type__c = oppRecordTypes[0].id;
             }
@@ -852,6 +853,8 @@ public without sharing class UTIL_CustomSettingsFacade {
         recurringDonationsSettings.IsRecurringDonations2Enabled__c = settings.IsRecurringDonations2Enabled__c;
         recurringDonationsSettings.InstallmentOppStageName__c = settings.InstallmentOppStageName__c;
         recurringDonationsSettings.RecurringDonations2EnablementState__c = settings.RecurringDonations2EnablementState__c;
+        recurringDonationsSettings.DisableRollupsWhenCreatingInstallments__c = settings.DisableRollupsWhenCreatingInstallments__c;
+        recurringDonationsSettings.npe03__Record_Type__c = settings.npe03__Record_Type__c;
 
         orgRecurringDonationsSettings = recurringDonationsSettings;
 
