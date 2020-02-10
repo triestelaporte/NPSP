@@ -1453,6 +1453,7 @@ public class ALLO_AllocationsUtil {
 
         if (ALLOCATION_SETTINGS.Default_Allocations_Enabled__c) { // Only if Default Allocations are Enabled
             //  Check for a non null/zero amount with no allocations.
+            //TODO: See if needs Updating for Amount null/zero change
             if (amount != null && amount != 0 && (allocations == null || allocations.size() == 0)) {
                 return true;
             }

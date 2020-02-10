@@ -366,7 +366,6 @@ public class ALLO_AllocationsUtil_TEST {
         System.assertEquals (false, recsForRev.isOpportunityWithParentAndNoAllocations(opps[0]), '1st Opportunity should have parent and Amount and allocations');
         System.assertEquals (true, recsForRev.isOpportunityWithParentAndNoAllocations(opps[1]), '2nd Opportunity should have parent and Amount and no allocations');
         System.assertEquals (false, recsForRev.isOpportunityWithParentAndNoAllocations(opps[2]), '3rd Opportunity should have no parent And Amount and no allocations');
-
     }
 
     /* @description Test 3 - Test initialize Errors [ALLO_AllocationsUtil.RecordsForReview.initializeErrors]
@@ -424,8 +423,126 @@ public class ALLO_AllocationsUtil_TEST {
      * Main Class Tests [Critical Path is covering as many as possible in this section]
      ********************************************************************************************************/
     //TODO: Method: determineRecordsRequiringReview, isRequiresReview, isExcluded, getExcludedOpportunityRecordtypes, getExcludedOpportunityTypes
-    // Confirm that Opportunities that are excluded for either RecordType or Type are not processed/included
+    /**
+     * @description Test 1 - Confirm  that isExcluded returns true for Opportunites that should be excluded based on type and
+     *              false for ones that should not be excluded.
+     *              [ALLO_AllocationsUtil.isExcluded, ALLO_AllocationsUtil.getExcludedOpportunityRecordTypes,
+     *               ALLO_AllocationsUtil.getExcludedOpportunityTypes]
+     */
+    @isTest private static void excludeOpportunitiesForTypeAndRecordtype() {
+        List<General_Accounting_Unit__c> gaus = UTIL_UnitTestData_TEST.createGAUs(3);
+        gaus[2].Name = 'Default GAU';
+        General_Accounting_Unit__c defaultGau = gaus[2];
+        insert gaus;
+
+        setupSettings(new Allocations_Settings__c(
+            Payment_Allocations_Enabled__c = true,
+            Default_Allocations_Enabled__c = true,
+            Default__c = defaultGau.Id,
+            Excluded_Opp_Types__c = 'Test;Test2',
+            // Just need valid ids for unit test.  Will not actually use as recordtype id
+            Excluded_Opp_RecTypes__c = UserInfo.getOrganizationId() + ';' + UserInfo.getUserId()
+            )
+        );
+
+        // Opportunities to test.  Not inserting, and only populating the required field for the test
+        List<Opportunity> oppsToTest = new List<Opportunity> {
+            new Opportunity(Type = 'Test'),
+            new Opportunity(Type = 'Include'),
+            new Opportunity(Type = 'Test2'),
+            new Opportunity(),
+            new Opportunity(Type = ''),
+            new Opportunity(RecordtypeId = UserInfo.getUserId()),
+            new Opportunity(RecordtypeId = UserInfo.getProfileId()),
+            new Opportunity(RecordTypeId = UserInfo.getOrganizationId())
+        };
+
+        List<Boolean> expectedResults = new List<Boolean> {
+            true,
+            false,
+            true,
+            false,
+            false,
+            true,
+            false,
+            true
+        };
+
+        for (Integer i = 0; i < oppsToTest.size(); i++) {
+            System.assertEquals(expectedResults[i], ALLO_AllocationsUtil.isExcluded(oppsToTest[i]), 'Opportunity with Type value of \'' + oppsToTest[i].Type + '\' and RecordtypeId value of ' + oppsToTest[i].RecordtypeId + ' should be ' + (expectedResults[i] ? 'excluded' : 'included'));
+        }
+
+    }
+
     // Confirm that Opportunities Modified Since Boundary Date are flagged for review
+    @isTest private static void confirmOnlyOppsModifiedSinceBoundaryDateAreFlaggedForReview() {
+
+        ALLO_AllocationsUtil.RecordsForReview recsForRev = new ALLO_AllocationsUtil.RecordsForReview();
+
+        List<Account> accs = UTIL_UnitTestData_TEST.createMultipleTestAccounts(1, null);
+        insert accs;
+
+        List<General_Accounting_Unit__c> gaus = UTIL_UnitTestData_TEST.createGAUs(3);
+        gaus[2].Name = 'Default GAU';
+        General_Accounting_Unit__c defaultGau = gaus[2];
+        insert gaus;
+
+        setupSettings(new Allocations_Settings__c(
+            Payment_Allocations_Enabled__c = true,
+            Default_Allocations_Enabled__c = true,
+            Default__c = defaultGau.Id));
+
+        npe03__Recurring_Donation__c rd = new TEST_RecurringDonationBuilder()
+            .withInstallmentPeriodYearly()
+            .withDateEstablished(Date.newInstance(1984,01,29))
+            .withAccount(accs[0].Id)
+            .withAmount(20)
+            .withScheduleTypeMultiplyValue()
+            .withOpenEndedStatusOpen()
+            .build();
+        insert rd;
+
+        Campaign cam = new Campaign(Name='Test Campaign: ' + UTIL_UnitTestData_TEST.getUniqueString(), IsActive=true);
+        insert cam;
+
+
+        List<Contact> ctcs = UTIL_UnitTestData_TEST.createMultipleTestContacts(3);
+        insert ctcs;
+
+        // Turn Off Allocation Triggers
+        ALLO_AllocationsUtil.disableAllocationTriggers();
+
+        List<Opportunity> opps = UTIL_UnitTestData_TEST.oppsForContactList(ctcs, null, UTIL_UnitTestDATA_TEST.getClosedWonStage(), System.today().addDays(30), 20, null, null);
+        opps[0].npe03__Recurring_Donation__c = rd.Id;
+        opps[1].npe03__Recurring_Donation__c = rd.Id;
+        insert opps;
+
+        List<Allocation__c> allosForInsert = new list<Allocation__c>();
+        // Recurring Donation Allocations
+        Allocation__c percentAlloRd = new Allocation__c(Recurring_Donation__c = rd.id, Percent__c = 50, General_Accounting_Unit__c = gaus[0].id);
+        allosForInsert.add(percentAlloRd);
+
+        Allocation__c amountAlloRd = new Allocation__c(Recurring_Donation__c = rd.id, Amount__c = 10, General_Accounting_Unit__c = gaus[1].id);
+        allosForInsert.add(amountAlloRd);
+
+        // Opportunity Allocations
+        Allocation__c percentAlloOpp = new Allocation__c(Opportunity__c = opps[0].Id, Amount__c = 10, Percent__c = 50, General_Accounting_Unit__c = gaus[0].Id);
+        allosForInsert.add(percentAlloOpp);
+
+        Allocation__c amountAlloOpp = new Allocation__c(Opportunity__c = opps[0].Id, Amount__c = 10, General_Accounting_Unit__c = gaus[1].id);
+        allosForInsert.add(amountAlloOpp);
+
+        insert allosForInsert;
+
+        for (Allocation__c alloc : allosForInsert) {
+            recsForRev.addAllocationByType(alloc);
+        }
+
+        System.assertEquals(true, ALLO_AllocationsUtil.isRequiresReview(opps[0], recsForRev.oppsAllocations.get(opps[0].Id), null), 'Opportunity 0, no boundary date');
+        System.assertEquals(false, ALLO_AllocationsUtil.isRequiresReview(opps[0], recsForRev.oppsAllocations.get(opps[0].Id), System.now().addDays(1)), 'Opportunity 0, boundary date of tomorrow');
+        System.assertEquals(true, ALLO_AllocationsUtil.isRequiresReview(opps[0], recsForRev.oppsAllocations.get(opps[0].Id), System.now().addDays(-1)), 'Opportunity 0, boundary date of yesterday');
+    }
+
     // Confirm that Opportunities are flagged for review if Boundary Date is null
     // Confirm that Opportunities with non null/zero Amount and no allocations are flagged for review [Only if Default Allocations Are Enabled]
     // Confirm that Opportunities Associated with Campaign or Recurring Donation with non null/zero Amount and no allocations are flagged for review (Present to cover circumstance when Default Allocations Are Not Enabled)
