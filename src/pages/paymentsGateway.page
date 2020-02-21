@@ -1,0 +1,46 @@
+<apex:page showHeader="false" applyHtmlTag="true" applyBodyTag="false">
+    <head>
+        <apex:slds />
+    </head>
+
+    <!-- Begin Default Content REMOVE THIS -->
+    <h1>Inside Visualforce page</h1>
+    <!-- End Default Content REMOVE THIS -->
+
+    <form onsubmit="handleForm(event)">
+        <label> Name </label>
+        <input id="name" name="name" />
+        <div id="payments"></div>
+        <button id="submit">Submit</button>
+    </form>
+
+    <script src="https://d2w37eyz6rciar.cloudfront.net/elevate.min.js"></script>
+
+    <script>
+        console.log('script is running...');
+        var sfdo = new sfdoPaymentsJsSdk();
+        sfdo.mount({
+            id: 'payments',
+            designSystem: 'Lightning'
+        });
+
+        function handleForm(e) {
+            e.preventDefault()
+            var nameoncard = document.getElementById('name').value
+
+            sfdo
+                .createToken({
+                    nameOnCard: nameoncard
+                })
+                .then(function response(resp) {
+                    const token = resp.token
+                    console.log('token: ', token);
+                    // Handle submitting your token to Payments.
+                })
+                .catch(function handleError(err) {
+                    console.log(`Show error ${JSON.stringify(err)}`)
+                });
+        }
+    </script>
+
+</apex:page>
