@@ -5,7 +5,7 @@ project:
         name: Cumulus
         name_managed: Nonprofit Success Pack
         namespace: npsp
-        api_version: 46.0
+        api_version: 47.0
         install_class: STG_InstallScript
         uninstall_class: STG_UninstallScript
     git:
@@ -505,6 +505,16 @@ tasks:
                   xpath: //ns:fields/ns:help[../ns:name='DonationCampaignImported__c']
                 - path: src/objectTranslations/DataImport__c-**.objectTranslation
                   xpath: //ns:fields/ns:help[../ns:name='Donation_Record_Type_Name__c']
+
+    set_user_language:
+        description: Update the language of the Current User to the specified language as '-o param1 English' (Other languages are are Spanish, French, German and Dutch).
+        class_path: cumulusci.tasks.apex.anon.AnonymousApexTask
+        options:
+            apex: >-
+                User u = [SELECT Id FROM User WHERE Id = :UserInfo.getUserId() LIMIT 1];
+                Map<String, String> languageMap = new Map<String, String>{ 'English' => 'en_US', 'Spanish' => 'es', 'French' => 'fr', 'German' => 'de', 'Dutch' => 'nl_NL', 'english' => 'en_US', 'spanish' => 'es', 'french' => 'fr', 'german' => 'de', 'dutch' => 'nl_NL' };
+                u.LanguageLocaleKey = languageMap.get('%%%PARAM_1%%%');
+                Update u;
 
 
 flows:
