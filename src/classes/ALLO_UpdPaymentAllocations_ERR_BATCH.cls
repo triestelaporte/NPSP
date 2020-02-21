@@ -43,8 +43,8 @@ public class ALLO_UpdPaymentAllocations_ERR_BATCH extends ERR_RecordErrorReproce
      * @param Datetime boundary The point after which Error Records for this process should be ignored because they are
      *        too recent (meaning they happened in the most recent batch execution)
      */
-    public ALLO_UpdPaymentAllocations_ERR_BATCH(Datetime boundary) {
-        super(boundary);
+    public ALLO_UpdPaymentAllocations_ERR_BATCH() {
+        super();
     }
 
     /**

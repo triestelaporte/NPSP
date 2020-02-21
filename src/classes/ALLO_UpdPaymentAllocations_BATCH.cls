@@ -196,10 +196,10 @@ public class ALLO_UpdPaymentAllocations_BATCH extends UTIL_AbstractChunkingLDV_B
             upsert allocationsSettings;
 
             // Execute Error Batch Phase
-            ALLO_UpdPaymentAllocations_ERR_BATCH alloErrBatch = new ALLO_UpdPaymentAllocations_ERR_BATCH(this.jobStart);
+            ALLO_UpdPaymentAllocations_ERR_BATCH alloErrBatch = new ALLO_UpdPaymentAllocations_ERR_BATCH();
 
             alloErrBatch.setBatchSize(getBatchSize());
-
+            alloErrBatch.setBoundary(this.jobStart);
             Database.executeBatch(alloErrBatch, this.getBatchSize());
         }
     }
