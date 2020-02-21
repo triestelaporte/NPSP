@@ -50,15 +50,6 @@ public inherited sharing class ERR_RecordErrorReprocessBatch_MOCK extends ERR_Re
     }
 
     /*******************************************************************************************************
-     * @description Constructor
-     * @param DateTime boundary Only records whose LastModifiedDate <= boundary will
-     *        be processed
-    *******************************************************************************************************/
-    public ERR_RecordErrorReprocessBatch_MOCK(DateTime boundary) {
-        super(boundary);
-    }
-
-    /*******************************************************************************************************
      * @description The Context Type (Error__c.Context_Type__c value) the Record Errors are stored under.
      *              (Child class must implement this method, and should not be blank/null)
      * @return String Context Type

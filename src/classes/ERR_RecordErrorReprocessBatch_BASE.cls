@@ -49,7 +49,7 @@
 *              or will assume all records if not.
 * @group ErrorHandling
 */
-public abstract inherited sharing class ERR_RecordErrorReprocessBatch_BASE extends UTIL_AbstractChunkinglDV_BATCH {
+public abstract inherited sharing class ERR_RecordErrorReprocessBatch_BASE extends UTIL_AbstractChunkingLDV_BATCH {
 
     @testVisible private DateTime boundary;
 
@@ -61,11 +61,12 @@ public abstract inherited sharing class ERR_RecordErrorReprocessBatch_BASE exten
     }
 
     /*******************************************************************************************************
-     * @description Constructor
+     * @description Sets the boundary for what records will/will not be processed during the Error
+     *              Reprocessing phase.
      * @param DateTime boundary Only records whose LastModifiedDate <= boundary will
      *        be processed
     *******************************************************************************************************/
-    public ERR_RecordErrorReprocessBatch_Base(DateTime boundary) {
+    public void setBoundary(DateTime boundary) {
         this.boundary = (boundary != null) ? boundary :System.now().addDays(1);
     }
 
