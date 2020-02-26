@@ -21,7 +21,7 @@ export default class paymentsGateway extends LightningElement {
             this.loadStaticResource();
         }
 
-        this.visualforcePageUrl = `https://dream-saas-8770-dev-ed--npsp.visualforce.com/apex/paymentsGateway`;
+        this.visualforcePageUrl = `https://app-innovation-9526-dev-ed--npsp.visualforce.com/apex/paymentsGateway`;
         this.sdkSourcedUrl = "https://cctokenization-webapp.s3-us-west-1.amazonaws.com/index.html";
 
     }
@@ -38,6 +38,7 @@ export default class paymentsGateway extends LightningElement {
 
                 this.sfdo.mount({
                     id: element.id,
+                    clientId: 1234,
                     designSystem: 'Lightning'
                 })
                 .catch(error => {

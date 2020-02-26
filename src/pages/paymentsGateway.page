@@ -21,6 +21,7 @@
         var sfdo = new sfdoPaymentsJsSdk();
         sfdo.mount({
             id: 'payments',
+            clientId: '00D6g0000000000EAA',
             designSystem: 'Lightning'
         });
 
