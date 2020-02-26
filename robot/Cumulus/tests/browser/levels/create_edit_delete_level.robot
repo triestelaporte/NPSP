@@ -30,7 +30,7 @@ Create and edit level to verify fields
     Go To Page                                          Listing                            Level__c
     Click Special Object Button                         New
     Wait Until Loading Is Complete
-    Current Page Should Be                              Home                               Level__c
+    Current Page Should Be                              Custom                             Level__c
 
     Enter Level Values
     ...                                                 Level Name=AutomationLevel
