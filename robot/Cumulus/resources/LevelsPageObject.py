@@ -32,7 +32,7 @@ class LevelDetailPage(BaseNPSPPage, DetailPage):
 
 
 @pageobject("Custom", "Level_c")
-class CreateLevelPage(BaseNPSPPage, HomePage):
+class CreateLevelPage(BaseNPSPPage, BasePage):
 
     def _is_current_page(self):
         """
