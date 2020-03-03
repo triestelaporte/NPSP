@@ -2,15 +2,8 @@
     <h1 class="slds-p-bottom_medium">Hello World! Inside LWC</h1>
 
     <div class="slds-grid slds-wrap">
-        <div class="slds-size_1-of-3">
-            <h1>Load SDK as static resource in LWC</h1>
-            <div lwc:dom='manual'
-                 data-name='payments'
-                 id='payments'>
-            </div>
-        </div>
 
-        <div class="slds-size_1-of-3">
+        <div class="slds-size_1-of-1">
             <h1>Visualforce page iFramed in LWC</h1>
             <iframe width='500'
                     height='250'
@@ -19,16 +12,15 @@
             </iframe>
         </div>
 
-        <div class="slds-size_1-of-3">
-            <h1>Attempting to manually create iFrame using sdk provided src url</h1>
-            <iframe width='100%'
-                    height='250'
-                    scrolling="no"
-                    name="_privateSFDOFrame"
-                    title="Secure payment input frame"
-                    src={sdkSourcedUrl}>
-            </iframe>
+        <div class="slds-size_1-of-1">
+            <lightning-button label="Tokenize"
+                              onclick={sendMessageToIframe}>
+            </lightning-button>
         </div>
+
+        <template if:true={hasResult}>
+            <h1>{result}</h1>
+        </template>
     </div>
 
 </template>

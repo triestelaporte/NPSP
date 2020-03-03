@@ -37,6 +37,11 @@
 public with sharing class GE_FormRendererService {
 
     @AuraEnabled
+    public static String getDomainUrl() {
+        return System.URL.getOrgDomainUrl().getHost();
+    }
+
+    @AuraEnabled
     public static FORM_RenderWrapper getRenderWrapperById(Id templateId) {
         FORM_Service formService = new FORM_Service();
 

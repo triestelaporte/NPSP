@@ -1,4 +1,5 @@
 <apex:page showHeader="false" applyHtmlTag="true" applyBodyTag="false">
+
     <head>
         <apex:slds />
     </head>
@@ -11,13 +12,13 @@
         <label> Name </label>
         <input id="name" name="name" />
         <div id="payments"></div>
-        <button id="submit">Submit</button>
     </form>
 
     <script src="https://d2w37eyz6rciar.cloudfront.net/elevate.min.js"></script>
 
     <script>
         console.log('script is running...');
+
         var sfdo = new sfdoPaymentsJsSdk();
         sfdo.mount({
             id: 'payments',
@@ -25,22 +26,36 @@
             designSystem: 'Lightning'
         });
 
-        function handleForm(e) {
-            e.preventDefault()
-            var nameoncard = document.getElementById('name').value
+        const hostname = window.location.hostname;
+        const arr = hostname.split(".");
+        const instance = arr[0].replace('--npsp', '');
+        console.log(hostname, arr, instance);
 
-            sfdo
-                .createToken({
-                    nameOnCard: nameoncard
-                })
-                .then(function response(resp) {
-                    const token = resp.token
-                    console.log('token: ', token);
-                    // Handle submitting your token to Payments.
-                })
-                .catch(function handleError(err) {
-                    console.log(`Show error ${JSON.stringify(err)}`)
-                });
+        const vfOrigin = `https://${instance}--npsp.visualforce.com`;
+        const lexOrigin = `https://${instance}.lightning.force.com`;
+
+        window.onmessage = function (e) {
+            if (e.data && e.origin === lexOrigin) {
+                console.log('e.data: ', e.data);
+                if (e.data.action === 'createToken') {
+                    sfdo
+                        .createToken({
+                            nameOnCard: 'test name'
+                        })
+                        .then(function response(resp) {
+                            const token = resp.token
+                            console.log('token: ', token);
+                            // Handle token.
+                            let successString = JSON.stringify({ token: token });
+                            window.top.postMessage(successString, '*');
+                        })
+                        .catch(function handleError(err) {
+                            console.log(`Show error ${JSON.stringify(err)}`);
+                            let errorString = JSON.stringify(err);
+                            window.top.postMessage(errorString, '*');
+                        });
+                }
+            }
         }
     </script>
 

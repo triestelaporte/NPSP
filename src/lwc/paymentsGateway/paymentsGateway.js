@@ -1,94 +1,52 @@
 import { LightningElement, track } from 'lwc';
-import { ShowToastEvent } from 'lightning/platformShowToastEvent';
-import { loadScript } from 'lightning/platformResourceLoader';
-// importing jquery library  from static resource
-//import SFDO_PAYMENTS_JS_SDK from '@salesforce/resourceUrl/sfdoPaymentsJsSdk';
-//import SFDO_PAYMENTS_JS_SDK from '@salesforce/resourceUrl/MODIFIEDsfdoPaymentsJsSdk';
-import ELEVATE_SDK from '@salesforce/resourceUrl/ElevateSdk';
-
+import getDomainUrl from '@salesforce/apex/GE_FormRendererService.getDomainUrl';
 export default class paymentsGateway extends LightningElement {
-    sfdo;
-    elementId = 'payments';
-    connected = false;
 
+    @track domain;
+    @track visualforceOrigin;
     @track visualforcePageUrl;
-    @track sdkSourcedUrl;
+    @track lexOrigin;
+    @track result;
+
+    get hasResult() {
+        return this.result !== undefined ? true : false;
+    }
+
+    async connectedCallback() {
+        let domainUrl = await getDomainUrl();
+        this.domain = domainUrl.split('.')[0];
+        console.log('domain: ', this.domain);
+        this.visualforceOrigin = `https://${this.domain}--npsp.visualforce.com`;
+        this.visualforcePageUrl = `${this.visualforceOrigin}/apex/paymentsGateway`;
+        this.lexOrigin = `https://${this.domain}.lightning.force.com`;
+    }
 
     renderedCallback() {
-        console.log('%c*** renderedCallback', 'font-size: 0.5rem; font-weight: bold; color: green;');
-        if (this.connected === false) {
-            this.connected = true;
-            this.loadStaticResource();
+        let component = this;
+
+        window.onmessage = function (e) {
+            console.log('origin: ', e.origin);
+            console.log('vfOrigin: ', component.visualforceOrigin);
+            if (e.data && e.origin === component.visualforceOrigin) {
+                console.log('e.data: ', e.data);
+                let response = JSON.parse(e.data);
+                console.log('response: ', response);
+
+                if (response.error) {
+                    let error = JSON.stringify(response.error);
+                    component.result = error;
+                } else if (response.token) {
+                    component.result = response.token;
+                }
+            }
         }
-
-        this.visualforcePageUrl = `https://app-innovation-9526-dev-ed--npsp.visualforce.com/apex/paymentsGateway`;
-        this.sdkSourcedUrl = "https://cctokenization-webapp.s3-us-west-1.amazonaws.com/index.html";
-
     }
 
-    loadStaticResource() {
-        Promise.all([
-            loadScript(this,ELEVATE_SDK)
-        ])
-            .then(() => {
-
-                let element = this.template.querySelector("[data-name='payments']");
-                console.log('Manual Dom Element Id: ', element.id);
-                this.sfdo = new sfdoPaymentsJsSdk();
-
-                this.sfdo.mount({
-                    id: element.id,
-                    clientId: 1234,
-                    designSystem: 'Lightning'
-                })
-                .catch(error => {
-                    console.error(error);
-                });
-
-                /*this.sfdo.mount({
-                    element: element,
-                    designSystem: 'Lightning'
-                })
-                .catch(error => {
-                    console.error(error);
-                });*/
-
-                /*this.sfdo
-                    .createToken({
-                        nameOnCard: 'Test Name'
-                    })
-                    .then(function response(resp) {
-                        const token = resp.token
-                        console.log('token: ', token);
-                        // Handle submitting your token to Payments.
-                    })
-                    .catch(function handleError(err) {
-                        console.error(err);
-                        console.log(`Show error ${JSON.stringify(err)}`)
-                    })*/
-                console.log('%c*** We\'re mounted?', 'font-size: 0.5rem; font-weight: bold; color: green;');
-                this.showSuccessMessage();
-                //this.handlePaymentsGatewayMounting();
-            })
-            .catch(error => {
-                this.error = error;
-                this.dispatchEvent(
-                    new ShowToastEvent({
-                        title: 'Error!!',
-                        message: error.message,
-                        variant: 'error',
-                    }),
-                );
-            });
-    }
-
-    showSuccessMessage() {
-        this.dispatchEvent(
-            new ShowToastEvent({
-                title: 'Success!!',
-                message: 'StaticResource ElevateSdk loaded successfully!!',
-                variant: 'success',
-            }),
+    sendMessageToIframe() {
+        console.log('*** sendMessageToIframe');
+        this.template.querySelector('iframe').contentWindow.postMessage(
+            { action: 'createToken' },
+            '*'
         );
     }
 }
