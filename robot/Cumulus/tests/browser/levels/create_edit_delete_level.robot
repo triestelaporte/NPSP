@@ -29,9 +29,8 @@ Create and edit level to verify fields
     [tags]                               W-038641                 feature:Levels
 
     Go To Page                                       Listing                            Level__c
-    Click Special Object Button                      New
-    Wait Until Loading Is Complete
-    Current Page Should Be                           Custom                             Level__c
+    Navigate To Level Page                           create
+    #Current Page Should Be                           Custom                             Level__c
 
     Enter Level Values
     ...                                                 Level Name=AutomationLevel
@@ -53,11 +52,8 @@ Create and edit level to verify fields
     Wait Until Loading Is Complete
     Navigate To And Validate Field Value                Minimum Amount (>\=)    contains    ${min_amount}
     Navigate To And Validate Field Value                Maximum Amount (<)      contains    ${max_amount}
-
-    Click Show More Actions Button                      Edit
-    Current Page Should Be                              Custom                             Level__c
-
-
+    Go To Page                                       Listing                            Level__c
+    Navigate To Level Page                           edit
     Enter Level Values
     ...                                                 Minimum Amount=${minamount_to_edit}
     ...                                                 Maximum Amount=${maxamount_to_edit}

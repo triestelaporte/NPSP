@@ -165,6 +165,7 @@ npsp_lex_locators={
         'no_payments':'//tbody/tr[./th//a[contains(@title,"PMT")]]/td[3]',
         'pays':'//tbody/tr[./th//a[contains(@title,"PMT")]]/td[.//span[text()="{}"]]',
         'pay_amount':'//tbody/tr[{}]/td[3]/span/span[text()="{}"]',
+        'calculate_payments': 'css: input[value = "Calculate Payments"]',
         'check_occurrence':'//h2/a/span[@title="{}"]/following-sibling::span',
         'text':'//*[@id="j_id0:vfForm:j_id76:util_formfield:inputx:util_inputfield:inputX"]',
         'field-value':"//div[contains(@class,'slds-form-element')][./span[text()='{}']]/following-sibling::div",
