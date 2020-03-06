@@ -37,6 +37,9 @@
 @isTest//(IsParallel=true) Cannot execute in parallel due to Account/Contact insert and exclusive lock error
 public with sharing class RD2_EnablementService_TEST {
 
+    private static final TEST_SObjectGateway.RecurringDonationGateway rdGateway = new TEST_SObjectGateway.RecurringDonationGateway();
+    private static final TEST_SObjectGateway.OpportunityGateway oppGateway = new TEST_SObjectGateway.OpportunityGateway();
+
     /****
     * @description Creates data required for unit tests
     */
@@ -48,7 +51,8 @@ public with sharing class RD2_EnablementService_TEST {
 
     /****
     * @description Verifies a new Opportunity is created on Recurring Donations insert
-    * when enhanced Recurring Donations are not enabled
+    * when Enhanced Recurring Donations are not enabled and that no RD Schedule Records are
+    * created which ensures that the RD2 trigger is not executing.
     */
     @isTest
     private static void shouldCreateNewOppOnInsertWhenEnhancementIsNotEnabled() {
@@ -63,16 +67,20 @@ public with sharing class RD2_EnablementService_TEST {
         insert rd;
         Test.stopTest();
 
-        List<Opportunity> opps = getOpportunities(rd.Id);
+        List<Opportunity> opps = oppGateway.getRecords(rd);
         System.assertEquals(1, opps.size(), 'An Opp should be created on RD insert: ' + opps);
+
+        System.assertEquals(0, [SELECT Count() FROM RecurringDonationSchedule__c],
+            'There should be no RD Schedule Records Created');
     }
 
     /****
     * @description Verifies a new Opportunity is not created on Recurring Donations insert
-    * when enhanced Recurring Donations are enabled
+    * when enhanced Recurring Donations are enabled and the RD2 Trigger has been disabled.
+    * This verifies that RD2 functionality is isolated from RD1 functionality.
     */
     @isTest
-    private static void shouldNotCreateNewOppOnInsertWhenEnhancementIsEnabled() {
+    private static void shouldNotCreateNewOppOnInsertWhenRD2TriggerIsDisabledAndEnhancedRDIsEnabled() {
         setRecurringDonations2Enabled();
 
         npe03__Recurring_Donation__c rd = new TEST_RecurringDonationBuilder()
@@ -80,11 +88,13 @@ public with sharing class RD2_EnablementService_TEST {
             .withAmount(100)
             .build();
 
+        disableRD2Trigger();
+
         Test.startTest();
         insert rd;
         Test.stopTest();
 
-        List<Opportunity> opps = getOpportunities(rd.Id);
+        List<Opportunity> opps = oppGateway.getRecords(rd);
         System.assertEquals(true, opps.isEmpty(), 'No Opp should be created on RD insert: ' + opps);
     }
 
@@ -107,24 +117,28 @@ public with sharing class RD2_EnablementService_TEST {
         update rd;
         Test.stopTest();
 
-        List<Opportunity> opps = getOpportunities(rd.Id);
+        List<Opportunity> opps = oppGateway.getRecords(rd);
         System.assertEquals(1, opps.size(), 'An Opp should be created on RD update: ' + opps);
         System.assertEquals(200, opps[0].Amount, 'Opportunity Amount should be updated');
     }
 
     /****
     * @description Verifies no new Opportunity is created or existing updated on Recurring Donation update
-    * when enhanced Recurring Donations are enabled
+    * when enhanced Recurring Donations are enabled and the RD2 Trigger has been disabled.
+    * This verifies that RD2 functionality is isolated from RD1 functionality.
     */
     @isTest
-    private static void shouldNotCreateOrUpdateOppOnUpdateWhenEnhancementIsEnabled() {
+    private static void shouldNotCreateOrUpdateOppOnUpdateWhenRD2TriggerIsDisabledAndEnhancedRDIsEnabled() {
         setRecurringDonations2Enabled();
 
         Contact contact = getContact();
 
+        disableRD2Trigger();
+
         npe03__Recurring_Donation__c rd = new TEST_RecurringDonationBuilder()
             .withContact(contact.Id)
             .withAmount(100)
+            .withDefaultValues()
             .build();
         insert rd;
 
@@ -135,8 +149,8 @@ public with sharing class RD2_EnablementService_TEST {
         update rd;
         Test.stopTest();
 
-        List<Opportunity> opps = getOpportunities(rd.Id);
-        System.assertEquals(1, opps.size(), 'No Opp should be created on RD update: ' + opps);
+        List<Opportunity> opps = oppGateway.getRecords(rd);
+        System.assertEquals(1, opps.size(), 'No new Opp should be created due to disabled RD2 triggers: ' + opps);
         System.assertEquals(100, opps[0].Amount, 'Existing Opp Amount should be unchanged');
     }
 
@@ -146,7 +160,7 @@ public with sharing class RD2_EnablementService_TEST {
     @isTest
     private static void shouldAutogenerateNameWhenEnhancementIsNotEnabled() {
         setRecurringDonations2Disabled();
-        
+
         verifyAutomatedNaming();
     }
 
@@ -171,22 +185,23 @@ public with sharing class RD2_EnablementService_TEST {
         npe03__Recurring_Donation__c rd = new TEST_RecurringDonationBuilder()
             .withContact(contact.Id)
             .withAmount(100)
+            .withDefaultValues()
             .build();
 
         Test.startTest();
         insert rd;
         Test.stopTest();
 
-        rd = new TEST_SObjectGateway.RecurringDonationGateway().getRecord(rd.Id);
+        rd = rdGateway.getRecord(rd.Id);
         System.assertEquals(RD2_NamingService_TEST.getExpectedName(contact, '100'), rd.Name, 'Name should match');
     }
 
     /****
-    * @description Verifies enhanced Recurring Donations are not ready for enablement 
+    * @description Verifies enhanced Recurring Donations are not ready for enablement
     * when Customizable Rollups are not enabled
     */
     @isTest
-    private static void shouldNotActivateEnhancementWhenCustomizableRollupsAreNotEnabled() {  
+    private static void shouldNotActivateEnhancementWhenCustomizableRollupsAreNotEnabled() {
         RD2_EnablementService service = new RD2_EnablementService();
         setCustomizableRollups(false);
         RD2_EnablementService.isUserRunningLightning = true;
@@ -196,11 +211,11 @@ public with sharing class RD2_EnablementService_TEST {
     }
 
     /****
-    * @description Verifies enhanced Recurring Donations are not ready for enablement 
+    * @description Verifies enhanced Recurring Donations are not ready for enablement
     * when LEX is not enabled
     */
     @isTest
-    private static void shouldNotActivateEnhancementWhenLEXIsNotEnabled() {  
+    private static void shouldNotActivateEnhancementWhenLEXIsNotEnabled() {
         RD2_EnablementService service = new RD2_EnablementService();
 
         setCustomizableRollups(true);
@@ -211,11 +226,11 @@ public with sharing class RD2_EnablementService_TEST {
     }
 
     /****
-    * @description Verifies enhanced Recurring Donations are not ready for enablement 
-    * when PilotEnabled feature paramenter is false
+    * @description Verifies enhanced Recurring Donations are not ready for enablement
+    * when PilotEnabled feature parameter is false
     */
     @isTest
-    private static void shouldNotActivateEnhancementWhenPilotEnabledIsFalse() {   
+    private static void shouldNotActivateEnhancementWhenPilotEnabledIsFalse() {
         RD2_EnablementService service = new RD2_EnablementService();
 
         setCustomizableRollups(true);
@@ -232,7 +247,7 @@ public with sharing class RD2_EnablementService_TEST {
     * and PilotEnabled feature parameter is set to true
     */
     @isTest
-    private static void shouldActivateEnhancementWhenAllDependenciesAreCompleted() {    
+    private static void shouldActivateEnhancementWhenAllDependenciesAreCompleted() {
         RD2_EnablementService service = new RD2_EnablementService();
 
         setCustomizableRollups(true);
@@ -243,11 +258,24 @@ public with sharing class RD2_EnablementService_TEST {
     }
 
     /****
-    * @description Verifies enhanced Recurring Donations are not enabled 
-    * when PilotEnabled feature paramenter is false
+    * @description Verifies enhanced Recurring Donations are enabled
+    * when enablement override is set
     */
     @isTest
-    private static void shouldNotEnableEnhancementWhenPilotEnabledIsFalse() {  
+    private static void shouldEnableEnhancementWhenOverrideIsTrue() {
+        RD2_EnablementService.isRecurringDonations2EnabledOverride = true;
+
+        setPilotEnabledFeatureParameter(false);
+
+        System.assertEquals(true, RD2_EnablementService.isRecurringDonations2Enabled, 'Enhancement should be enabled');
+    }
+
+    /****
+    * @description Verifies enhanced Recurring Donations are not enabled
+    * when PilotEnabled feature parameter is false
+    */
+    @isTest
+    private static void shouldNotEnableEnhancementWhenPilotEnabledIsFalse() {
         setPilotEnabledFeatureParameter(false);
         configureRecurringDonations2Enabled();
 
@@ -255,23 +283,23 @@ public with sharing class RD2_EnablementService_TEST {
     }
 
     /****
-    * @description Verifies enhanced Recurring Donations are not enabled 
+    * @description Verifies enhanced Recurring Donations are not enabled
     * when enhanced Recurring Donations are not configured
     */
     @isTest
-    private static void shouldNotEnableEnhancementWhenNotConfigured() {  
+    private static void shouldNotEnableEnhancementWhenNotConfigured() {
         setPilotEnabledFeatureParameter(true);
 
         System.assertEquals(false, RD2_EnablementService.isRecurringDonations2Enabled, 'Enhancement should not be enabled');
     }
 
     /****
-    * @description Verifies enhanced Recurring Donations are enabled 
+    * @description Verifies enhanced Recurring Donations are enabled
     * when PilotEnabled feature parameter is set to true
     * and enhanced Recurring Donations are configured
     */
     @isTest
-    private static void shouldEnableEnhancementWhenDependenciesAreCompleted() {  
+    private static void shouldEnableEnhancementWhenDependenciesAreCompleted() {
         setPilotEnabledFeatureParameter(true);
         configureRecurringDonations2Enabled();
 
@@ -299,7 +327,7 @@ public with sharing class RD2_EnablementService_TEST {
     * @description Builds an Opportunity for the Recurring Donation record
     * @param rdId Recurring Donation Id
     * @param accountId Account Id
-    * @return Opportunity 
+    * @return Opportunity
     */
     private static Opportunity buildOpportunity(Id rdId, Id accountId) {
         return new TEST_OpportunityBuilder()
@@ -309,28 +337,6 @@ public with sharing class RD2_EnablementService_TEST {
             .withCloseDate(Date.today())
             .withRecurringDonation(rdId)
             .build();
-    }
-
-    /****
-    * @description Returns Opportunities associated with the specified Recurring Donation
-    * @param rdId Recurring Donation Id
-    * @return List<Opportunity>
-    */
-    private static List<Opportunity> getOpportunities(Id rdId) {
-        return getOpportunities(new Set<Id>{ rdId });
-    }
-
-    /****
-    * @description Returns Opportunities associated with specified Recurring Donations
-    * @param rdIds Recurring Donation Ids
-    * @return List<Opportunity>
-    */
-    private static List<Opportunity> getOpportunities(Set<Id> rdIds) {
-        return [
-            SELECT Amount, npe03__Recurring_Donation__c
-            FROM Opportunity
-            WHERE npe03__Recurring_Donation__c IN :rdIds
-        ];
     }
 
     /***
@@ -349,7 +355,7 @@ public with sharing class RD2_EnablementService_TEST {
     * @param isEnabled Indicates if the PilotEnabled should be enabled using a Mock feature management
     * @return none
     */
-    private static void setPilotEnabledFeatureParameter(Boolean isEnabled) {
+    public static void setPilotEnabledFeatureParameter(Boolean isEnabled) {
         UTIL_FeatureEnablement featureEnablement = UTIL_FeatureEnablement.getInstance();
 
         featureEnablement.featureManagement = (UTIL_FeatureManagement) Test.createStub(
@@ -365,11 +371,11 @@ public with sharing class RD2_EnablementService_TEST {
     * @description Stubs custom settings configuration to enable enhanced Recurring Donations
     * @return none
     */
-    private static void configureRecurringDonations2Enabled() {        
+    public static void configureRecurringDonations2Enabled() {
         UTIL_CustomSettingsFacade.getRecurringDonationsSettingsForTest(
             new npe03__Recurring_Donations_Settings__c(
                 IsRecurringDonations2Enabled__c = true,
-                npe03__Open_Opportunity_Behavior__c = RD_RecurringDonations.RecurringDonationCloseOptions.Mark_Opportunities_Closed_Lost.name()
+                npe03__Open_Opportunity_Behavior__c = RD2_Constants.CloseActions.Mark_Opportunities_Closed_Lost.name()
             )
         );
     }
@@ -385,7 +391,16 @@ public with sharing class RD2_EnablementService_TEST {
     }
 
     /***
-    * @description Stubs enhanced Recurring Donations as enabled 
+    * @description Disable the Enhanced Recurring Donations trigger in TDTM
+    * @return none
+    */
+    private static void disableRD2Trigger() {
+        TDTM_ProcessControl.toggleTriggerState('npe03__Recurring_Donation__c', 'RD2_RecurringDonations_TDTM', false);
+        TDTM_ProcessControl.toggleTriggerState('Opportunity', 'RD2_RecurringDonationsOpp_TDTM', false);
+    }
+
+    /***
+    * @description Stubs enhanced Recurring Donations as enabled
     * @return none
     */
     public static void setRecurringDonations2Enabled() {

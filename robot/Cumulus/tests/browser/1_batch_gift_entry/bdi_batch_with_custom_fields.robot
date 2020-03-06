@@ -1,9 +1,13 @@
 *** Settings ***
 
 Resource        robot/Cumulus/resources/NPSP.robot
+Library         cumulusci.robotframework.PageObjects
+...             robot/Cumulus/resources/DataImportPageObject.py
 Suite Setup     Run keywords
 ...             Open Test Browser
 ...             Setup Variables
+Library         cumulusci.robotframework.PageObjects
+...             robot/Cumulus/resources/DataImportPageObject.py
 Suite Teardown  Delete Records and Close Browser
 
 *** Keywords ***
@@ -46,14 +50,13 @@ Create Data Import Via API
     ...        ${org_ns}Custom_add_date__c=${date}
     ...        ${org_ns}custom_cont_num__c=9876543210
     Set Global Variable     &{data_import}       &{data_import}
-    Select App Launcher Tab   NPSP Data Imports
-    Select Object Dropdown
-    Click Link    link=To Be Imported
+    Go To Page        Listing       DataImport__c
+    Change View To    To Be Imported
     Page Should Contain Link    &{data_import}[Name]
     Click Special Object Button       Start Data Import
     Wait For Locator    frame    NPSP Data Import
     Click Data Import Button    NPSP Data Import    button    Begin Data Import Process
-    Wait For Batch To Complete    data_imports.status    Completed
+    Wait For Batch To Process    BDI_DataImport_BATCH    Completed
     Click Button With Value   Close
 
 Verify Custom Fields on Account Contact and Address Objects

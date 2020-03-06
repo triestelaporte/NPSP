@@ -1,7 +1,10 @@
 *** Settings ***
 
 Resource        robot/Cumulus/resources/NPSP.robot
-Library           DateTime
+Library         cumulusci.robotframework.PageObjects
+...             robot/Cumulus/resources/BatchGiftEntryPageObject.py
+...             robot/Cumulus/resources/PaymentPageObject.py
+Library         DateTime
 Suite Setup     Open Test Browser
 Suite Teardown  Delete Records and Close Browser
 
@@ -9,8 +12,7 @@ Suite Teardown  Delete Records and Close Browser
 
 Enter a donation for an account with exact payment match
     #Enter a donation for an account that has an exact payment match, don't select the match, and process batch
-    [tags]  stable
-    Set Window Size    1024    768
+    [tags]  unstable
     ${ns} =  Get NPSP Namespace Prefix
     &{batch} =       API Create DataImportBatch    
     ...    ${ns}Batch_Process_Size__c=50    
@@ -29,23 +31,22 @@ Enter a donation for an account with exact payment match
     ...    CloseDate=${date}    
     ...    npe01__Do_Not_Automatically_Create_Payment__c=false    
     ...    Name=&{account}[Name] Test Donation        
-    Select App Launcher Tab   Batch Gift Entry
+    Go To Page                        Listing                      Batch_Gift_Entry
     # Click Link  &{batch}[Name]
     Click Link With Text    &{batch}[Name]
     Wait For Locator    bge.title    Batch Gift Entry
     Select Value From BGE DD    Donor Type    Account
-    Populate Field By Placeholder    Search Accounts    &{account}[Name]
+    Search Field By Value    Search Accounts    &{account}[Name]
     Click Link    &{account}[Name]
     Click Link With Text    Review Donations
     ${pay_no}    Get BGE Card Header    &{opportunity}[Name]
     Log To Console    ${pay_no}
     Page Should Contain    &{opportunity}[Name]
-    Click Button    title:Close this window
+    Click Button With Title     Close this window
     Click Element With Locator    bge.field-input    Donation Amount
     Fill BGE Form
     ...                       Donation Amount=100
-    Click Element With Locator    bge.field-input    Donation Date
-    Click BGE Button    Today
+    Select Date From Datepicker    Donation Date    Today
     Click BGE Button       Save
     Verify Row Count    1
     Page Should Contain Link    ${pay_no}
@@ -53,7 +54,7 @@ Enter a donation for an account with exact payment match
     Sleep    2
     Click BGE Button       Process Batch
     Click Data Import Button    NPSP Data Import    button    Begin Data Import Process
-    Wait For Batch To Complete    data_imports.status    Completed
+    Wait For Batch To Process    BDI_DataImport_BATCH    Completed
     Click Button With Value   Close
     Wait Until Element Is Visible    text:All Gifts
     Sleep    2
@@ -61,14 +62,14 @@ Enter a donation for an account with exact payment match
     #Click Link    ${value}
     Click Link With Text    ${value}
     Select Window    ${value} | Salesforce    10
-    ${pay_id}    Get Current Record ID
-    Store Session Record      npe01__OppPayment__c  ${pay_id}
+    Current Page Should Be    Details    npe01__OppPayment__c
+    ${pay_id}    Save Current Record ID For Deletion      npe01__OppPayment__c  
     Verify Expected Values    nonns    npe01__OppPayment__c    ${pay_id}
     ...    npe01__Payment_Amount__c=100.0
     ...    npe01__Payment_Date__c=${date}
     ...    npe01__Paid__c=True
     Go To Record Home    &{opportunity}[Id]
-    Confirm Value    Amount    $100.00    Y 
+    Navigate To And Validate Field Value   Amount    contains    $100.00
     ${opp_date} =     Get Current Date    result_format=%-m/%-d/%Y
-    Confirm Value    Close Date    ${opp_date}    Y 
-    Confirm Value    Stage    Closed Won    Y 
+    Navigate To And Validate Field Value    Close Date    contains    ${opp_date}
+    Navigate To And Validate Field Value    Stage    contains    Closed Won

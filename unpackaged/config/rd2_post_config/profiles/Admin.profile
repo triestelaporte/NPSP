@@ -1,11 +1,28 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <Profile xmlns="http://soap.sforce.com/2006/04/metadata">
+    <classAccesses>
+        <apexClass>%%%NAMESPACE%%%RD2_EnablementDelegate_CTRL</apexClass>
+        <enabled>true</enabled>
+    </classAccesses>
+    <classAccesses>
+        <apexClass>%%%NAMESPACE%%%RD2_VisualizeScheduleController</apexClass>
+        <enabled>true</enabled>
+    </classAccesses>
+    <classAccesses>
+        <apexClass>%%%NAMESPACE%%%UTIL_BatchJobProgress_CTRL</apexClass>
+        <enabled>true</enabled>
+    </classAccesses>
     <layoutAssignments>
         <layout>npe03__Recurring_Donation__c-Enhanced Recurring Donations Layout</layout>
     </layoutAssignments>
     <fieldPermissions>
         <editable>false</editable>
         <field>npe03__Recurring_Donation__c.%%%NAMESPACE%%%Always_Use_Last_Day_Of_Month__c</field>
+        <readable>true</readable>
+    </fieldPermissions>
+    <fieldPermissions>
+        <editable>false</editable>
+        <field>npe03__Recurring_Donation__c.%%%NAMESPACE%%%CurrentYearValue__c</field>
         <readable>true</readable>
     </fieldPermissions>
     <fieldPermissions>
@@ -19,13 +36,18 @@
         <readable>true</readable>
     </fieldPermissions>
     <fieldPermissions>
-        <editable>true</editable>
-        <field>npe03__Recurring_Donation__c.%%%NAMESPACE%%%RecurringType__c</field>
+        <editable>false</editable>
+        <field>npe03__Recurring_Donation__c.%%%NAMESPACE%%%NextYearValue__c</field>
         <readable>true</readable>
     </fieldPermissions>
     <fieldPermissions>
         <editable>true</editable>
         <field>npe03__Recurring_Donation__c.%%%NAMESPACE%%%PaymentMethod__c</field>
+        <readable>true</readable>
+    </fieldPermissions>
+    <fieldPermissions>
+        <editable>true</editable>
+        <field>npe03__Recurring_Donation__c.%%%NAMESPACE%%%RecurringType__c</field>
         <readable>true</readable>
     </fieldPermissions>
     <fieldPermissions>

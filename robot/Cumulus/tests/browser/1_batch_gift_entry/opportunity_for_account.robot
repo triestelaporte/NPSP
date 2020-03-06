@@ -1,7 +1,9 @@
 *** Settings ***
 
 Resource        robot/Cumulus/resources/NPSP.robot
-Library           DateTime
+Library         cumulusci.robotframework.PageObjects
+...             robot/Cumulus/resources/BatchGiftEntryPageObject.py
+Library         DateTime
 Suite Setup     Open Test Browser
 Suite Teardown  Delete Records and Close Browser
 
@@ -10,7 +12,6 @@ Suite Teardown  Delete Records and Close Browser
 Select an opportunity for an account make grid changes and process it
     #Select an opportunity for an account, make grid changes, and process it
     [tags]  stable
-    Set Window Size    1024    768
     ${ns} =  Get NPSP Namespace Prefix
     &{batch} =       API Create DataImportBatch    
     ...    ${ns}Batch_Process_Size__c=50    
@@ -24,19 +25,18 @@ Select an opportunity for an account make grid changes and process it
     &{account} =     API Create Organization Account
     ${date} =     Get Current Date    result_format=%Y-%m-%d
     &{opportunity} =     API Create Opportunity   &{account}[Id]    Donation  StageName=Prospecting    Amount=100    CloseDate=${date}    
-    Select App Launcher Tab   Batch Gift Entry
+    Go To Page                        Listing                      Batch_Gift_Entry
     # Click Link  &{batch}[Name]
     Click Link With Text    &{batch}[Name]
     Wait For Locator    bge.title    Batch Gift Entry
     Select Value From BGE DD    Donor Type    Account
-    Populate Field By Placeholder    Search Accounts    &{account}[Name]
+    Search Field By Value    Search Accounts    &{account}[Name]
     Click Link    &{account}[Name]
     Click Link With Text    Review Donations
     Click BGE Button    Update this Opportunity
     Fill BGE Form
     ...                       Donation Amount=20
-    Click Element With Locator    bge.field-input    Donation Date
-    Click BGE Button    Today
+    Select Date From Datepicker    Donation Date    Today
     Click BGE Button       Save
     Sleep    2
     Verify Row Count    1
@@ -48,11 +48,11 @@ Select an opportunity for an account make grid changes and process it
     Scroll Page To Location    0    0
     Click BGE Button       Process Batch
     Click Data Import Button    NPSP Data Import    button    Begin Data Import Process
-    Wait For Batch To Complete    data_imports.status    Completed
+    Wait For Batch To Process    BDI_DataImport_BATCH    Completed
     Click Button With Value   Close
     Wait Until Element Is Visible    text:All Gifts
     Go To Record Home    &{opportunity}[Id]
-    Confirm Value    Amount    $10.00    Y 
+    Navigate To And Validate Field Value    Amount    contains    $10.00
     ${opp_date} =     Get Current Date    result_format=%-m/%-d/%Y
-    Confirm Value    Close Date    ${opp_date}    Y 
-    Confirm Value    Stage    Closed Won    Y 
+    Navigate To And Validate Field Value    Close Date    contains    ${opp_date}
+    Navigate To And Validate Field Value    Stage    contains    Closed Won

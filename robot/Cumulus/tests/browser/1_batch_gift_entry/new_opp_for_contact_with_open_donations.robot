@@ -1,7 +1,10 @@
 *** Settings ***
 
 Resource        robot/Cumulus/resources/NPSP.robot
-Library           DateTime
+Library         cumulusci.robotframework.PageObjects
+...             robot/Cumulus/resources/BatchGiftEntryPageObject.py
+...             robot/Cumulus/resources/OpportunityPageObject.py
+Library         DateTime
 Suite Setup     Open Test Browser
 Suite Teardown  Delete Records and Close Browser
 
@@ -10,7 +13,6 @@ Suite Teardown  Delete Records and Close Browser
 Create a new opportunity for a contact with open donations
     #Enter an account with open donations, then clear it and enter a contact with open donations, then choose to create a new opp and process it
     [tags]  stable
-    Set Window Size    1024    768
     ${ns} =  Get NPSP Namespace Prefix
     &{batch} =       API Create DataImportBatch    
     ...    ${ns}Batch_Process_Size__c=50    
@@ -27,24 +29,24 @@ Create a new opportunity for a contact with open donations
     ${date} =     Get Current Date    result_format=%Y-%m-%d
     &{opportunity1} =     API Create Opportunity   &{account}[Id]    Donation  StageName=Prospecting    Amount=100    CloseDate=${date}  
     &{opportunity2} =     API Create Opportunity   &{contact}[AccountId]    Donation  StageName=Prospecting    Amount=100    CloseDate=${date}      
-    Select App Launcher Tab   Batch Gift Entry
+    Go To Page                        Listing                      Batch_Gift_Entry
     #Click Link  &{batch}[Name]
     Click Link With Text    &{batch}[Name]
     Wait For Locator    bge.title    Batch Gift Entry
     Select Value From BGE DD    Donor Type    Account
-    Populate Field By Placeholder    Search Accounts    &{account}[Name]
+    Search Field By Value    Search Accounts    &{account}[Name]
     Click Link    &{account}[Name]
     Click Link With Text    Review Donations
     Click BGE Button    Update this Opportunity
     Select Value From BGE DD    Donor Type    Contact
     Page Should Not Contain Link    Review Donations
-    Populate Field By Placeholder    Search Contacts    &{contact}[FirstName] &{contact}[LastName]
+    Search Field By Value    Search Contacts    &{contact}[FirstName] &{contact}[LastName]
     Click Link    &{contact}[FirstName] &{contact}[LastName]
     Click Link With Text    Review Donations
     Click Link    Alternatively, create a new Opportunity.
     Fill BGE Form
     ...                       Donation Amount=20
-    Click Field And Select Date    Donation Date    Today
+    Select Date From Datepicker    Donation Date    Today
     Click BGE Button       Save
     # Reload Page
     Verify Row Count    1
@@ -60,7 +62,7 @@ Create a new opportunity for a contact with open donations
     # Select Frame With Title    NPSP Data Import
     # Click Button With Value   Begin Data Import Process
     Click Data Import Button    NPSP Data Import    button    Begin Data Import Process
-    Wait For Batch To Complete    data_imports.status    Completed
+    Wait For Batch To Process    BDI_DataImport_BATCH    Completed
     Click Button With Value   Close
     Wait Until Element Is Visible    text:All Gifts
     Verify Expected Values    nonns    Opportunity    &{opportunity2}[Id]
@@ -74,14 +76,11 @@ Create a new opportunity for a contact with open donations
     Select Window    ${value} | Salesforce    10
     ${opp_name}    Return Locator Value    check_field_spl    Opportunity
     Click Link    ${opp_name}
-    ${newopp_id}    Get Current Record ID
-    Store Session Record    Opportunity    ${newopp_id}
-    Confirm Value    Amount    $100.00    Y 
+    Current Page Should Be    Details    Opportunity
+    ${newopp_id}    Save Current Record ID For Deletion    Opportunity    
+    Navigate To And Validate Field Value   Amount    contains    $100.00
     ${opp_date} =     Get Current Date    result_format=%-m/%-d/%Y
-    Confirm Value    Close Date    ${opp_date}    Y 
-    Confirm Value    Stage    Closed Won    Y 
+    Navigate To And Validate Field Value  Close Date    contains  ${opp_date}
+    Navigate To And Validate Field Value    Stage    contains    Closed Won
     Go To Record Home    &{contact}[Id]
-    Select Tab     Related
-    Load Related List    Opportunities
-    Verify Occurrence    Opportunities    2
-      
+    Validate Related Record Count        Opportunities      2

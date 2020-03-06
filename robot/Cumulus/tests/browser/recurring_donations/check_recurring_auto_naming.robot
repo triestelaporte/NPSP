@@ -1,6 +1,9 @@
 *** Settings ***
 
 Resource        robot/Cumulus/resources/NPSP.robot
+Library         cumulusci.robotframework.PageObjects
+...             robot/Cumulus/resources/ContactPageObject.py
+...             robot/Cumulus/resources/RecurringDonationsPageObject.py
 Suite Setup     Run Keywords
 ...             Open Test Browser
 ...             Setup Variables
@@ -24,17 +27,17 @@ Check Recurring Donation Autoname
 
     #Create a Recurring Donation
     &{contact} =                 API Create Contact                         Email=jjoseph@robot.com
-    Go To Record Home            &{contact}[Id]
+    Go To Page                   Details        Contact             object_id=&{contact}[Id]
     &{recurringdonation} =       API Create Recurring Donation              npe03__Contact__c=&{contact}[Id]
     ...                          Name=Name Should Overwrite
     ...                          npe03__Amount__c=1200
     ...                          npe03__Installments__c=12
     ...                          npe03__Schedule_Type__c=Divide By
     ...                          npe03__Installment_Period__c=Monthly
-    Go To Record Home            &{recurringdonation}[Id]
+    Go To Page                   Details        npe03__Recurring_Donation__c             object_id=&{recurringdonation}[Id]
 
     #Check Recurring Donation Autoname
-    Confirm Value                Recurring Donation Name                     &{contact}[Name] $1,200 - Recurring          Y
+    Navigate To And Validate Field Value          Recurring Donation Name          contains           &{contact}[Name] $1,200 - Recurring
 
     #Turn off Autonaming to Reset Setting
     Salesforce Update            npe03__Recurring_Donations_Settings__c     ${recurringsettings}[0][Id]

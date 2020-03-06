@@ -1,7 +1,27 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <CustomObject xmlns="http://soap.sforce.com/2006/04/metadata">
+    <actionOverrides>
+        <actionName>View</actionName>
+        <comment>Action override created by Lightning App Builder during activation.</comment>
+        <content>NPSP_Recurring_Donation</content>
+        <formFactor>Large</formFactor>
+        <skipRecordTypeSelect>false</skipRecordTypeSelect>
+        <type>Flexipage</type>
+    </actionOverrides>
+    <compactLayoutAssignment>Enhanced_Recurring_Donations</compactLayoutAssignment>
+    <compactLayouts>
+        <fullName>Enhanced_Recurring_Donations</fullName>
+        <fields>Name</fields>
+        <fields>npe03__Amount__c</fields>
+        <fields>npe03__Installment_Period__c</fields>
+        <fields>%%%NAMESPACE%%%InstallmentFrequency__c</fields>
+        <fields>npe03__Last_Payment_Date__c</fields>
+        <fields>%%%NAMESPACE%%%Status__c</fields>
+        <label>Enhanced Recurring Donations</label>
+    </compactLayouts>
     <fields>
         <fullName>npe03__Amount__c</fullName>
+        <description>The amount for each installment Opportunity.</description>
         <externalId>false</externalId>
         <inlineHelpText>The amount for each installment Opportunity.</inlineHelpText>
         <label>Amount</label>
@@ -15,6 +35,7 @@
     <fields>
         <fullName>npe03__Date_Established__c</fullName>
         <defaultValue>Today()</defaultValue>
+        <description>The initial inception date for this Recurring Donation. The default is the current date.</description>
         <externalId>false</externalId>
         <inlineHelpText>The initial inception date for this recurring donation. The default is the current date.</inlineHelpText>
         <label>Date Established</label>
@@ -24,8 +45,54 @@
         <type>Date</type>
     </fields>
     <fields>
+        <fullName>%%%NAMESPACE%%%ClosedReason__c</fullName>
+        <description>The reason this Recurring Donation was closed.</description>
+        <externalId>false</externalId>
+        <inlineHelpText>The reason this Recurring Donation was closed.</inlineHelpText>
+        <label>Closed Reason</label>
+        <required>false</required>
+        <trackHistory>false</trackHistory>
+        <trackTrending>false</trackTrending>
+        <type>Picklist</type>
+        <valueSet>
+            <valueSetDefinition>
+                <sorted>false</sorted>
+                <value>
+                    <fullName>Card Expired</fullName>
+                    <default>false</default>
+                    <label>Card Expired</label>
+                </value>
+                <value>
+                    <fullName>Commitment Completed</fullName>
+                    <default>false</default>
+                    <isActive>true</isActive>
+                    <label>Commitment Completed</label>
+                </value>
+                <value>
+                    <fullName>Deceased Donor</fullName>
+                    <default>false</default>
+                    <label>Deceased Donor</label>
+                </value>
+                <value>
+                    <fullName>Financial Difficulty</fullName>
+                    <default>false</default>
+                    <label>Financial Difficulty</label>
+                </value>
+                <value>
+                    <fullName>No Longer Interested</fullName>
+                    <default>false</default>
+                    <label>No Longer Interested</label>
+                </value>
+                <value>
+                    <fullName>Unknown</fullName>
+                    <default>false</default>
+                    <label>Unknown</label>
+                </value>
+            </valueSetDefinition>
+        </valueSet>
+    </fields>
+    <fields>
         <fullName>%%%NAMESPACE%%%Day_of_Month__c</fullName>
-        <description>Sets the specific day of the month for future installments when the Installment Period is Monthly</description>
         <externalId>false</externalId>
         <inlineHelpText>Sets the specific day of the month for future installment Opportunities when the Installment Period is Monthly.</inlineHelpText>
         <label>Day of Month</label>
@@ -204,10 +271,50 @@
         </valueSet>
     </fields>
     <fields>
+        <fullName>%%%NAMESPACE%%%RecurringType__c</fullName>
+        <description>Select Open for an ongoing Recurring Donation. Select Fixed for a Recurring Donation that has a specific number of installments. For Fixed, you must also populate the Number of Planned Installments field.</description>
+        <externalId>false</externalId>
+        <inlineHelpText>Select Open for an ongoing Recurring Donation. Select Fixed for a Recurring Donation that has a specific number of installments. For Fixed, you must also populate the Number of Planned Installments field.</inlineHelpText>
+        <label>Recurring Type</label>
+        <required>false</required>
+        <trackHistory>false</trackHistory>
+        <trackTrending>false</trackTrending>
+        <type>Picklist</type>
+        <valueSet>
+            <restricted>true</restricted>
+            <valueSetDefinition>
+                <sorted>false</sorted>
+                <value>
+                    <fullName>Open</fullName>
+                    <default>true</default>
+                    <label>Open</label>
+                </value>
+                <value>
+                    <fullName>Fixed</fullName>
+                    <default>false</default>
+                    <isActive>true</isActive>
+                    <label>Fixed</label>
+                </value>
+            </valueSetDefinition>
+        </valueSet>
+    </fields>
+    <fields>
+        <fullName>%%%NAMESPACE%%%StartDate__c</fullName>
+        <defaultValue>Today()</defaultValue>
+        <description>The date that new or updated schedule information (Amount, Day of Month, etc.) for this Recurring Donation takes effect. The default is the current date.</description>
+        <externalId>false</externalId>
+        <inlineHelpText>The date that new or updated schedule information (Amount, Day of Month, etc.) for this Recurring Donation takes effect. The default is the current date.</inlineHelpText>
+        <label>Effective Date</label>
+        <required>false</required>
+        <trackHistory>false</trackHistory>
+        <trackTrending>false</trackTrending>
+        <type>Date</type>
+    </fields>
+    <fields>
         <fullName>npe03__Installment_Period__c</fullName>
         <description>How often you’ll receive the donations. NOTE: Changing the installment period for an existing Fixed-Length Recurring Donation may result in the loss and re-creation of open opportunities. Any data associated with those opportunities may be lost.</description>
         <externalId>false</externalId>
-        <inlineHelpText>The Installment Period along with Installment Frequency defines the installment schedule of this Recurring Donation. For example, if Installment Period is Monthly and Installment Frequency is 3, the schedule would be defined as &quot;every 3 months&quot;.</inlineHelpText>
+        <inlineHelpText>The Installment Period along with Installment Frequency defines the installment schedule of this Recurring Donation. For example, if Installment Period is Monthly and Installment Frequency is 3, the schedule is defined as &quot;every 3 months&quot;.</inlineHelpText>
         <label>Installment Period</label>
         <valueSet>
             <restricted>false</restricted>
@@ -251,8 +358,22 @@
         <type>Picklist</type>
     </fields>
     <fields>
+        <fullName>%%%NAMESPACE%%%InstallmentFrequency__c</fullName>
+        <description>The Installment Frequency along with Installment Period defines the installment schedule of this Recurring Donation. For example, if Installment Period is Monthly and Installment Frequency is 3, the schedule is defined as &quot;every 3 months&quot;.</description>
+        <externalId>false</externalId>
+        <inlineHelpText>The Installment Frequency along with Installment Period defines the installment schedule of this Recurring Donation. For example, if Installment Period is Monthly and Installment Frequency is 3, the schedule is defined as &quot;every 3 months&quot;.</inlineHelpText>
+        <label>Installment Frequency</label>
+        <precision>3</precision>
+        <required>false</required>
+        <scale>0</scale>
+        <trackHistory>false</trackHistory>
+        <trackTrending>false</trackTrending>
+        <type>Number</type>
+        <unique>false</unique>
+    </fields>
+    <fields>
         <fullName>npe03__Last_Payment_Date__c</fullName>
-        <description>Date of the last payment for this Recurring Donation</description>
+        <description>NPSP calculates this value automatically based on the last time an installment Opportunity was marked paid (read only).</description>
         <externalId>false</externalId>
         <inlineHelpText>NPSP calculates this value automatically based on the last time an installment Opportunity was marked paid (read only).</inlineHelpText>
         <label>Last Donation Date</label>
@@ -263,10 +384,10 @@
     </fields>
     <fields>
         <fullName>npe03__Paid_Amount__c</fullName>
-        <description>Total Amount paid on this Recurring Donation</description>
+        <description>The total amount paid on this Recurring Donation. Calculated automatically as the total amount of all Closed/Won installment Opportunities (read only).</description>
         <externalId>false</externalId>
         <inlineHelpText>The total amount paid on this Recurring Donation. Calculated automatically as the total amount of all Closed/Won installment Opportunities (read only).</inlineHelpText>
-        <label>Paid Amount</label>
+        <label>Total Paid Amount</label>
         <precision>18</precision>
         <required>false</required>
         <scale>2</scale>
@@ -276,10 +397,10 @@
     </fields>
     <fields>
         <fullName>npe03__Total_Paid_Installments__c</fullName>
-        <description>Total number of installments paid on this Recurring Donation.</description>
+        <description>Total number of installment Opportunities paid on this Recurring Donation (read only).</description>
         <externalId>false</externalId>
         <inlineHelpText>Total number of installment Opportunities paid on this Recurring Donation (read only).</inlineHelpText>
-        <label>Total Paid Installments</label>
+        <label>Number Of Paid Installments</label>
         <precision>18</precision>
         <required>false</required>
         <scale>0</scale>
@@ -300,7 +421,13 @@
         <type>Date</type>
     </fields>
     <deploymentStatus>Deployed</deploymentStatus>
-    <description>Recurring Donations with no end date.</description>
+    <description>Recurring Donations track charitable giving where a donor specifies an amount of money to be given on a regular basis.</description>
+    <enableActivities>true</enableActivities>
+    <enableFeeds>false</enableFeeds>
+    <enableHistory>true</enableHistory>
+    <enableReports>true</enableReports>
+    <enableSearch>true</enableSearch>
+    <enableSharing>true</enableSharing>
     <label>Recurring Donations</label>
     <nameField>
         <label>Recurring Donation Name</label>
@@ -309,15 +436,4 @@
     </nameField>
     <pluralLabel>Recurring Donations</pluralLabel>
     <sharingModel>ReadWrite</sharingModel>
-    <compactLayoutAssignment>Enhanced_Recurring_Donations</compactLayoutAssignment>
-    <compactLayouts>
-        <fullName>Enhanced_Recurring_Donations</fullName>
-        <fields>Name</fields>
-        <fields>npe03__Amount__c</fields>
-        <fields>npe03__Installment_Period__c</fields>
-        <fields>%%%NAMESPACE%%%InstallmentFrequency__c</fields>
-        <fields>npe03__Last_Payment_Date__c</fields>
-        <fields>%%%NAMESPACE%%%Status__c</fields>
-        <label>Enhanced Recurring Donations</label>
-    </compactLayouts>
 </CustomObject>
