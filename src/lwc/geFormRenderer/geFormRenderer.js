@@ -234,13 +234,17 @@ export default class GeFormRenderer extends NavigationMixin(LightningElement) {
         // handle error on callback from promise
         const handleCatchError = (err) => this.handleCatchOnSave(err);
 
-        GeFormService.handleSave(sectionsList, this.donorRecord, this.blankDataImportRecord).then(opportunityId => {
-            this.navigateToRecordPage(opportunityId);
-        }).catch(error => {
-            enableSave();
-            toggle();
-            handleCatchError(error);
-        });
+        GeFormService.handleSave(sectionsList, this.donorRecord, this.blankDataImportRecord)
+            .then(opportunityId => {
+                console.log('pause attempting to navigate to record page...');
+                enableSave();
+                toggle();
+                //this.navigateToRecordPage(opportunityId);
+            }).catch(error => {
+                enableSave();
+                toggle();
+                handleCatchError(error);
+            });
 
     }
 

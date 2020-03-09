@@ -4,12 +4,17 @@ import saveAndProcessDataImport from '@salesforce/apex/GE_GiftEntryController.sa
 import { handleError } from 'c/utilTemplateBuilder';
 import saveAndDryRunDataImport
     from '@salesforce/apex/GE_GiftEntryController.saveAndDryRunDataImport';
-import {api} from "lwc";
+import { api } from "lwc";
 import { isNotEmpty, isEmpty } from 'c/utilCommon';
 import getFormRenderWrapper
     from '@salesforce/apex/GE_FormServiceController.getFormRenderWrapper';
 import OPPORTUNITY_AMOUNT from '@salesforce/schema/Opportunity.Amount';
 import OPPORTUNITY_OBJECT from '@salesforce/schema/Opportunity';
+
+import insertDataImport from '@salesforce/apex/GE_GiftEntryController.insertDataImport';
+import makePurchaseCall from '@salesforce/apex/GE_GiftEntryController.makePurchaseCall';
+import updateDataImport from '@salesforce/apex/GE_GiftEntryController.updateDataImport';
+import processDataImport from '@salesforce/apex/GE_GiftEntryController.processDataImport';
 
 // https://developer.salesforce.com/docs/atlas.en-us.apexcode.meta/apexcode/apex_enum_Schema_DisplayType.htm
 // this list only includes fields that can be handled by lightning-input
@@ -31,9 +36,9 @@ const inputTypeByDescribeType = {
 };
 
 const numberFormatterByDescribeType = {
-  'PERCENT': 'percent-fixed',
-  'CURRENCY': 'currency',
-  'DECIMAL': 'decimal'
+    'PERCENT': 'percent-fixed',
+    'CURRENCY': 'currency',
+    'DECIMAL': 'decimal'
 };
 
 class GeFormService {
@@ -55,7 +60,7 @@ class GeFormService {
                     this.fieldMappings = result.fieldMappingSetWrapper.fieldMappingByDevName;
                     this.objectMappings = result.fieldMappingSetWrapper.objectMappingByDevName;
                     this.fieldTargetMappings = result.fieldMappingSetWrapper.fieldMappingByTargetFieldName;
-                    if(isEmpty(this.donationFieldTemplateLabel)) {
+                    if (isEmpty(this.donationFieldTemplateLabel)) {
                         this.donationFieldTemplateLabel = this.getDonationAmountCustomLabel(result.formTemplate);
                     }
                     resolve(result);
@@ -68,9 +73,9 @@ class GeFormService {
 
     getAllocationSettings() {
         return new Promise((resolve, reject) => {
-           getAllocationSettings()
-               .then(resolve)
-               .catch(handleError)
+            getAllocationSettings()
+                .then(resolve)
+                .catch(handleError)
         });
     }
 
@@ -129,15 +134,15 @@ class GeFormService {
         const mappingDevName = mapping.DeveloperName;
         // get developer name of mapping cmt
         let fieldElement;
-        for(const section of formTemplate.layout.sections) {
-           fieldElement = section.elements.find( element => {
-               if(Array.isArray(element.dataImportFieldMappingDevNames)) {
-                   return element.dataImportFieldMappingDevNames.includes(mappingDevName);
-               }
-           });
+        for (const section of formTemplate.layout.sections) {
+            fieldElement = section.elements.find(element => {
+                if (Array.isArray(element.dataImportFieldMappingDevNames)) {
+                    return element.dataImportFieldMappingDevNames.includes(mappingDevName);
+                }
+            });
         }
 
-        if(isNotEmpty(fieldElement)) {
+        if (isNotEmpty(fieldElement)) {
             // return custom label from the form template layout
             return fieldElement.customLabel;
         }
@@ -149,7 +154,7 @@ class GeFormService {
      * @param widgetValues
      * @returns {Promise<Id>}
      */
-    saveAndProcessDataImport(createdDIRecord, widgetValues, hasUserSelectedDonation = false) {
+    /*saveAndProcessDataImport(createdDIRecord, widgetValues, hasUserSelectedDonation = false) {
         const widgetDataString = JSON.stringify(widgetValues);
         return new Promise((resolve, reject) => {
             saveAndProcessDataImport({
@@ -165,6 +170,51 @@ class GeFormService {
                     reject(error);
                 });
         });
+    }*/
+
+    /**
+     * Takes a Data Import record and additional object data, processes it, and returns the new Opportunity created from it.
+     * @param createdDIRecord
+     * @param widgetValues
+     * @returns {Promise<Id>}
+     */
+    async saveAndProcessDataImport(createdDIRecord, widgetValues, hasUserSelectedDonation = false, token) {
+        try {
+            console.log('*** saveAndProcessDataImport');
+            console.log('token: ', token);
+            const widgetDataString = JSON.stringify(widgetValues);
+
+            let dataImportRecord = null;
+            let purchaseResponse = null;
+            let updatedDataImportRecord = null;
+            let processResponse = null;
+
+            dataImportRecord = await insertDataImport({
+                diRecord: createdDIRecord,
+                widgetData: widgetDataString
+            });
+            console.log('dataImportRecord: ', dataImportRecord);
+
+            purchaseResponse = await makePurchaseCall({
+                token: token
+            });
+            console.log('purchaseResponse: ', purchaseResponse);
+            // Write purchase response to dataImportRecord
+
+            updatedDataImportRecord = await updateDataImport({
+                diRecord: dataImportRecord
+            });
+            console.log('updatedDataImportRecord: ', updatedDataImportRecord);
+
+            // Make process call
+            processResponse = await processDataImport({
+                diRecord: updatedDataImportRecord,
+                updateGift: hasUserSelectedDonation
+            });
+            console.log('processResponse: ', processResponse);
+        } catch (error) {
+            handleError(error);
+        }
     }
 
     /**
@@ -173,11 +223,12 @@ class GeFormService {
      * @returns opportunityId
      */
     handleSave(sectionList, record, dataImportRecord) {
-        const { diRecord, widgetValues } = this.getDataImportRecord(sectionList, record, dataImportRecord);
-
+        console.log('*** handleSave');
+        const { diRecord, widgetValues, token } = this.getDataImportRecord(sectionList, record, dataImportRecord);
+        console.log('token: ', token);
         const hasUserSelectedDonation = isNotEmpty(dataImportRecord);
 
-        const opportunityID = this.saveAndProcessDataImport(diRecord, widgetValues, hasUserSelectedDonation);
+        const opportunityID = this.saveAndProcessDataImport(diRecord, widgetValues, hasUserSelectedDonation, token);
 
         return opportunityID;
     }
@@ -188,18 +239,24 @@ class GeFormService {
      * @param record        Existing account or contact record to attach to the data import record
      * @return {{widgetValues: {}, diRecord: {}}}
      */
-    getDataImportRecord(sectionList, record, dataImportRecord){
+    getDataImportRecord(sectionList, record, dataImportRecord) {
         // Gather all the data from the input
         let fieldData = {};
         let widgetValues = {};
+        let token = null;
 
         sectionList.forEach(section => {
-            fieldData = { ...fieldData, ...(section.values)};
-            widgetValues = { ...widgetValues, ...(section.widgetValues)};
+            fieldData = { ...fieldData, ...(section.values) };
+            widgetValues = { ...widgetValues, ...(section.widgetValues) };
+            let temp = section.getToken();
+            console.log('service.getToken: ', temp);
+            if (temp) {
+                token = temp;
+            }
         });
 
         // Build the DI Record
-        let diRecord = {};  
+        let diRecord = {};
 
         for (let key in fieldData) {
             if (fieldData.hasOwnProperty(key)) {
@@ -217,12 +274,12 @@ class GeFormService {
         // Include any fields from a user selected donation
         diRecord = { ...diRecord, ...dataImportRecord };
 
-        return { diRecord, widgetValues };
+        return { diRecord, widgetValues, token };
     }
 
     saveAndDryRun(batchId, dataImport, widgetData) {
         return new Promise((resolve, reject) => {
-            saveAndDryRunDataImport({batchId, dataImport, widgetData})
+            saveAndDryRunDataImport({ batchId, dataImport, widgetData })
                 .then((result) => {
                     resolve(JSON.parse(result));
                 })
@@ -234,7 +291,7 @@ class GeFormService {
 
     getFormRenderWrapper(templateId) {
         return new Promise((resolve, reject) => {
-            getFormRenderWrapper({templateId: templateId})
+            getFormRenderWrapper({ templateId: templateId })
                 .then(renderWrapper => {
                     this.fieldMappings =
                         renderWrapper.fieldMappingSetWrapper.fieldMappingByDevName;

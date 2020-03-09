@@ -45,7 +45,20 @@ public with sharing class GE_FormRendererService {
     // TODO: Temporary location for purchase call with hardcoded headers and body
     @AuraEnabled
     public static string makePurchaseCall(String token) {
+
+        // Get Token from DI - check DI status? make sure charge hasn't happened?
+
+        // Get JWT
+
         // Create http request...
+
+
+
+
+
+
+
+
         Http http = new Http();
         HttpRequest request = new HttpRequest();
         request.setEndpoint('https://7jpea5zk79.execute-api.us-west-2.amazonaws.com/v1/payments/verified/purchase');

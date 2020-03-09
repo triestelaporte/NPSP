@@ -80,6 +80,23 @@ export default class GeFormSection extends LightningElement {
         return widgetValues;
     }
 
+    @api
+    getToken() {
+        console.log('*** getToken');
+        const widgets = this.template.querySelectorAll('c-ge-form-widget');
+        let token = null;
+        if(widgets !== null && typeof widgets !== 'undefined') {
+            widgets.forEach(widget => {
+                let temp = widget.getToken();
+                console.log('section.getToken: ', temp);
+                if (temp) {
+                    token = temp;
+                }
+            });
+        }
+        return token;
+    }
+
     /**
      * Get a list of fields that are required, but are null/undefined or otherwise blank in the dynamic form
      * @returns {Array} of invalid fields. If all fields are ok, the array is empty.

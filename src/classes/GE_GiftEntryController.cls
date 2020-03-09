@@ -111,6 +111,89 @@ public with sharing class GE_GiftEntryController {
         return oppId;
     }
 
+    // START POC METHODS
+    @AuraEnabled
+    public static DataImport__c insertDataImport(DataImport__c diRecord, String widgetData) {
+        // Check for widget data and convert it to the correct format for processing
+        String additionalObjectJSON = GE_FormRendererService.convertWidgetDataToObjectJSON(widgetData);
+        diRecord.Additional_Object_JSON__c = additionalObjectJSON;
+
+        // Save the Data Import record to the Database
+        diRecord = saveDataImport(diRecord);
+
+        return diRecord;
+    }
+
+    @AuraEnabled
+    public static String makePurchaseCall(String token) {
+        System.debug('makePurchaseCall: ' + token);
+
+        String jwtToken = generateJWT();
+
+        Http http = new Http();
+        HttpRequest request = new HttpRequest();
+        request.setEndpoint('https://7jpea5zk79.execute-api.us-west-2.amazonaws.com/v1/payments/verified/purchase');
+        request.setMethod('POST');
+        request.setHeader('Content-Type', 'application/json;charset=UTF-8');
+        request.setHeader('jwttoken', jwtToken);
+        request.setHeader('sfdo.merchantids', '47b70ca4-0f6e-4c52-819f-667ae804f9d2');
+        request.setHeader('sfdo.username', 'cbaxter');
+
+        // Set the body as a JSON object...
+        request.setBody('{"amount": 25, "currencyCode": "USD", "paymentMethodToken": "' + token + '", "merchantId": "47b70ca4-0f6e-4c52-819f-667ae804f9d2", "gatewayId": "f23da98a-c7aa-4637-962a-8c852e765e38", "email": "bart.simpson@example.com", "firstName": "Bart", "lastName": "Simpson", "metadata": { "campaignCode": "fake-campaign-code" }}');
+
+        HttpResponse response = http.send(request);
+
+        // Parse the JSON response...
+        if (response.getStatusCode() != 201) {
+            System.debug('The status code returned was not expected: ' +
+                response.getStatusCode() + ' ' + response.getStatus());
+            return JSON.serialize('Status Code: ' + response.getStatusCode() + ' JWT: ' + jwtToken);
+        } else {
+            System.debug(response.getBody());
+            return JSON.serialize(response.getBody());
+        }
+    }
+
+    private static String getSecret() {
+        // TODO: Remove later, hardcoded only for early dev
+        // Dev2 secret
+        return 'd733100d-2fcb-4bcc-9ef2-8f27c40aa006';
+
+        // Dev1 secret
+        //return ' cdd7216e-2b19-4803-a047-68543d9dd483';
+    }
+
+    private static String generateJWT() {
+        //String payload = '{"iss": "ApiKeyManager", "sub": "bart.simpson@example.com", "iat": 1582839616, "nbf": 1582839616, "exp": 1609488000, "jti": "4821d896-746b-40af-9567-d45ee73cca87", "sfdo.roles": "Payments.Purchase", "sfdo.product": "CRM", "sfdo.id": "00D6g0000000000EAA", "given_name": "Bart", "family_name": "Simpson", "name": "Bart Simpson", "crm_user_id": "bart.user@sf.org", "spc_org_id": "000000000000000"}';
+        String payload = '{"iss": "ApiKeyManager","iat": 1583196101,"exp": 1614732110,"aud": "www.example.com","sub": "cbaxter","sfdo.id": "00D6g0000000000EAA","sfdo.product": "CRM","sfdo.roles": "Payments.Purchase"}';
+        String secret = getSecret();
+        String jwt = UTIL_Jwt.getSignedJWTFromString(payload, secret);
+
+        // jwt generated from apex
+        return jwt;
+
+        // jwt from docs
+        //return 'eyJ0eXAiOiJKV1QiLCJhbGciOiJIUzI1NiJ9.eyJpc3MiOiJBcGlLZXlNYW5hZ2VyIiwiaWF0IjoxNTgzMTk2MTAxLCJleHAiOjE2MTQ3MzIxMTAsImF1ZCI6Ind3dy5leGFtcGxlLmNvbSIsInN1YiI6ImNiYXh0ZXIiLCJzZmRvLmlkIjoiMDBENmcwMDAwMDAwMDAwRUFBIiwic2Zkby5wcm9kdWN0IjoiQ1JNIiwic2Zkby5yb2xlcyI6IlBheW1lbnRzLlB1cmNoYXNlIn0.Fk2kH8occu-tEabrYALiAN16XlIUj4vpptWGs0x8eZs';
+    }
+
+    @AuraEnabled
+    public static DataImport__c updateDataImport(DataImport__c diRecord) {
+        update diRecord;
+
+        return diRecord;
+    }
+
+    @AuraEnabled
+    public static String processDataImport(DataImport__c diRecord, Boolean updateGift) {
+        // Run the BDI process on this new Data Import
+            //processDataImport(diRecord, false, updateGift);
+        // Get the ID of the created Opportunity so we can return it
+            //String oppId = getOpportunityIdFromImport(diRecord.Id);
+        return 'Attempted to process';
+    }
+    // END POC METHODS
+
     /*******************************************************************************************************
     * @description Set DataImport Settings that are important to Gift Entry matching
     * @return Data_Import_Settings__c diSettings object used to process gifts

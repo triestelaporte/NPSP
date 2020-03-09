@@ -31,6 +31,22 @@ export default class GeFormWidget extends LightningElement {
         return widgetAndValues;
     }
 
+    @api
+    getToken() {
+        console.log('*** getToken');
+        let token = null;
+        const thisWidget = this.widgetComponent;
+        // Need to make sure all widget components support returnValue()
+        if(this.isValid && typeof thisWidget.getToken === 'function'){
+            let temp = thisWidget.getToken();
+            console.log('widget.getToken: ', temp);
+            if (temp) {
+                token = temp;
+            }
+        }
+        return token;
+    }
+
     get isValid() {
         const thisWidget = this.widgetComponent;
         let isValid = false;

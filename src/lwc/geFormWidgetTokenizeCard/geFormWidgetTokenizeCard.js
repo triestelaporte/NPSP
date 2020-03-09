@@ -1,4 +1,4 @@
-import { LightningElement, track } from 'lwc';
+import { LightningElement, track, api } from 'lwc';
 import GeLabelService from 'c/geLabelService';
 import getDomainUrl from '@salesforce/apex/GE_FormRendererService.getDomainUrl';
 import makePurchaseCall from '@salesforce/apex/GE_FormRendererService.makePurchaseCall';
@@ -7,11 +7,12 @@ import makePurchaseCall from '@salesforce/apex/GE_FormRendererService.makePurcha
 export default class geFormWidgetTokenizeCard extends LightningElement {
 
     CUSTOM_LABELS = GeLabelService.CUSTOM_LABELS;
-    
+
     @track domain;
     @track visualforceOrigin;
     @track tokenizeCardPageUrl;
     @track isLoading = true;
+    @track token;
 
     async connectedCallback() {
         let domainUrl = await getDomainUrl();
@@ -22,6 +23,17 @@ export default class geFormWidgetTokenizeCard extends LightningElement {
 
     renderedCallback() {
         this.registerPostMessageListener();
+    }
+
+    @api
+    isValid() {
+        return true;
+    }
+
+    @api
+    getToken() {
+        console.log('*** getToken: ', this.token);
+        return this.token;
     }
 
     /*******************************************************************************
@@ -53,12 +65,20 @@ export default class geFormWidgetTokenizeCard extends LightningElement {
             console.log(error);
             alert(error);
         } else if (message.token) {
+            this.token = message.token;
             // TODO: Start - Remove later
             // Make purchase call... for dev only
-            let purchaseCallResponse = await makePurchaseCall({ token: message.token });
-            this.purchaseResult = JSON.parse(purchaseCallResponse);
-            console.log(this.purchaseResult);
-            alert(this.purchaseResult)
+            //let purchaseCallResponse = await makePurchaseCall({ token: message.token });
+
+            // Tokenize - good
+            // Insert DI - good
+            // Make purchase call - pass di, get jwt in server
+            // Update DI - good
+            // Process DI - 
+
+            //this.purchaseResult = JSON.parse(purchaseCallResponse);
+            //console.log(this.purchaseResult);
+            //alert(this.purchaseResult)
             // TODO: End - Remove later
 
             // TODO: Save token locally in widget until form requests it
