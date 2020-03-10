@@ -35,6 +35,21 @@ export default class geTemplateBuilderFormField extends LightningElement {
         }
     }
 
+    get cssClassCard() {
+        if (this.field.elementType === WIDGET) {
+            return 'slds-card slds-card_extension slds-card_extension-widget slds-m-vertical_small';
+        } else {
+            return 'slds-card slds-card_extension slds-m-vertical_small';
+        }
+    }
+    get cssClassActionsContainer() {
+        if (this.field.elementType === WIDGET) {
+            return 'slds-size_1-of-12 vertical-align-center'
+        } else {
+            return 'slds-size_1-of-12 slds-p-bottom_x-small';
+        }
+    }
+
     get name() {
         if (this.field.elementType === WIDGET) {
             return this.field.componentName;
@@ -128,6 +143,38 @@ export default class geTemplateBuilderFormField extends LightningElement {
     get labelGeAssistiveFormFieldDown() {
         return GeLabelService.format(this.CUSTOM_LABELS.geAssistiveFieldDown, [this.field.label]);
     }
+
+    /*******************************************************************************
+    * Start getters for data-qa-locator attributes
+    */
+
+    get qaLocatorInputFieldLabel() {
+        return `input ${this.CUSTOM_LABELS.commonFieldLabel} ${this.field.label}`;
+    }
+
+    get qaLocatorInputDefaultValue() {
+        return `input ${this.CUSTOM_LABELS.commonDefaultValue} ${this.field.label}`;
+    }
+
+    get qaLocatorCheckboxRequired() {
+        return `checkbox ${this.CUSTOM_LABELS.commonRequired} ${this.field.label}`;
+    }
+
+    get qaLocatorButtonDelete() {
+        return `button Delete ${this.field.label}`;
+    }
+
+    get qaLocatorButtonUp() {
+        return `button Up ${this.field.label}`;
+    }
+
+    get qaLocatorButtonDown() {
+        return `button Down ${this.field.label}`;
+    }
+
+    /*******************************************************************************
+    * End getters for data-qa-locator attributes
+    */
 
     stopPropagation(event) {
         event.stopPropagation();

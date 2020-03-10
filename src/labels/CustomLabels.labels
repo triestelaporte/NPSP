@@ -1802,8 +1802,8 @@ If you&apos;re not sure how to resolve these errors, post a message in the Nonpr
         &lt;br/&gt;Before your organization starts using Enhanced Recurring Donations:&lt;br/&gt;
         &lt;ul&gt;&lt;li&gt;Turn on workflows, processes, validation rules and triggers that you disabled prior to upgrade.&lt;/li&gt;
         &lt;li&gt;Assign the Enhanced Recurring Donations page layout to all user profiles and remove the old Recurring Donations page layout.&lt;/li&gt;
-        &lt;li&gt;Assign the NPSP Recurring Donation Lightning record page as the Org Default.&lt;/li&gt;   
-        &lt;li&gt;Assign the RD2_VisualizeScheduleController Apex class to your custom profiles.&lt;/li&gt;    
+        &lt;li&gt;Assign the NPSP Recurring Donation Lightning record page as the Org Default.&lt;/li&gt;
+        &lt;li&gt;Assign the RD2_VisualizeScheduleController Apex class to your custom profiles.&lt;/li&gt;
         &lt;li&gt;Adjust field-level security for Recurring Donations fields as necessary for your profiles and permission sets.&lt;/li&gt;
         &lt;li&gt;Adjust Recurring Donations reports to work with Enhanced Recurring Donations.&lt;/li&gt;
         &lt;li&gt;Educate your staff about Enhanced Recurring Donations.&lt;/li&gt;</value>
@@ -2121,6 +2121,15 @@ If you&apos;re not sure how to resolve these errors, post a message in the Nonpr
         <protected>true</protected>
         <shortDescription>The total Amount of all Closed Won Opps is not equal to the RD Amount.</shortDescription>
         <value>The combined Amount of all related Closed Won and Pledged Opportunities must match the Amount of a Fixed Length Recurring Donation.</value>
+    </labels>
+    <labels>
+        <fullName>RD_RefreshOppsContinueMessage</fullName>
+        <categories>Recurring-Donations, Error</categories>
+        <language>en_US</language>
+        <protected>true</protected>
+        <shortDescription>Confirmation message displayed to user before the process runs</shortDescription>
+        <value>This process updates all future installment Opportunities to match the current data for this Recurring Donation. For some installments, NPSP may delete and recreate new installments.
+&lt;br/&gt;&lt;br/&gt;Click Continue to start the process or Cancel to return to the Recurring Donation page.</value>
     </labels>
     <labels>
         <fullName>REL_Create_New_Relationship</fullName>
@@ -4448,6 +4457,14 @@ To check your GAU Allocation settings, go to Donations | GAU Allocations.</value
         <value>Error completing the {0} api: {1}</value>
     </labels>
     <labels>
+        <fullName>commonAmount</fullName>
+        <categories>Gift Entry</categories>
+        <language>en_US</language>
+        <protected>true</protected>
+        <shortDescription>Amount</shortDescription>
+        <value>Amount</value>
+    </labels>
+    <labels>
         <fullName>commonAssistiveError</fullName>
         <categories>Gift Entry</categories>
         <language>en_US</language>
@@ -4504,12 +4521,28 @@ To check your GAU Allocation settings, go to Donations | GAU Allocations.</value
         <value>Cancel</value>
     </labels>
     <labels>
+        <fullName>commonCardType</fullName>
+        <categories>Gift Entry</categories>
+        <language>en_US</language>
+        <protected>true</protected>
+        <shortDescription>Common label for credit card type</shortDescription>
+        <value>Card Type</value>
+    </labels>
+    <labels>
         <fullName>commonClone</fullName>
         <categories>Gift Entry</categories>
         <language>en_US</language>
         <protected>true</protected>
         <shortDescription>Clone</shortDescription>
         <value>Clone</value>
+    </labels>
+    <labels>
+        <fullName>commonCreditNumber</fullName>
+        <categories>Gift Entry</categories>
+        <language>en_US</language>
+        <protected>true</protected>
+        <shortDescription>Common label for credit card number</shortDescription>
+        <value>Credit Number</value>
     </labels>
     <labels>
         <fullName>commonDefaultValue</fullName>
@@ -4552,6 +4585,22 @@ To check your GAU Allocation settings, go to Donations | GAU Allocations.</value
         <value>Field Label</value>
     </labels>
     <labels>
+        <fullName>commonGeneralAccountUnit</fullName>
+        <categories>Gift Entry</categories>
+        <language>en_US</language>
+        <protected>true</protected>
+        <shortDescription>Common label for General Accounting Unit</shortDescription>
+        <value>General Account Unit</value>
+    </labels>
+    <labels>
+        <fullName>commonMMYY</fullName>
+        <categories>Gift Entry</categories>
+        <language>en_US</language>
+        <protected>true</protected>
+        <shortDescription>Common label for expiration date (MM/YY)</shortDescription>
+        <value>MM/YY</value>
+    </labels>
+    <labels>
         <fullName>commonNewGift</fullName>
         <categories>Gift Entry</categories>
         <language>en_US</language>
@@ -4590,6 +4639,22 @@ To check your GAU Allocation settings, go to Donations | GAU Allocations.</value
         <protected>true</protected>
         <shortDescription>Open</shortDescription>
         <value>Open</value>
+    </labels>
+    <labels>
+        <fullName>commonPaymentServices</fullName>
+        <categories>Gift Entry</categories>
+        <language>en_US</language>
+        <protected>true</protected>
+        <shortDescription>Common label for Payment Services</shortDescription>
+        <value>Payment Services</value>
+    </labels>
+    <labels>
+        <fullName>commonPercent</fullName>
+        <categories>Gift Entry</categories>
+        <language>en_US</language>
+        <protected>true</protected>
+        <shortDescription>Percent</shortDescription>
+        <value>Percent</value>
     </labels>
     <labels>
         <fullName>commonReadMore</fullName>
@@ -5109,16 +5174,16 @@ To check your GAU Allocation settings, go to Donations | GAU Allocations.</value
         <categories>Gift Entry</categories>
         <language>en_US</language>
         <protected>true</protected>
-        <shortDescription>Body below the Form Fields header</shortDescription>
-        <value>These fields are commonly included in gift entry forms. Custom Object Groups are also found in this section.</value>
+        <shortDescription>Form Fields sidebar text block</shortDescription>
+        <value>Choose fields to include in your form. Before adding fields, click the section in the main screen where you want the fields to go. In the sidebar, select the checkbox to add a field, and deselect it to remove the field from the form. If the object or field you want to use isn't listed, make sure you've set up the field with Advanced Mapping.</value>
     </labels>
     <labels>
         <fullName>geBodyFormFieldsDescLeftCol</fullName>
         <categories>Gift Entry</categories>
         <language>en_US</language>
         <protected>true</protected>
-        <shortDescription>Form Fields sidebar text block</shortDescription>
-        <value>Choose fields to include in your form. Before adding fields, click the section in the main screen where you want the fields to go. In the sidebar, select the checkbox to add a field, and deselect it to remove the field from the form. If the object or field you want to use isn't listed, make sure you've set up the field with Advanced Mapping.</value>
+        <shortDescription>Body below the Form Fields header</shortDescription>
+        <value>These fields are commonly included in gift entry forms. Custom Object Groups are also found in this section.</value>
     </labels>
     <labels>
         <fullName>geBodyFormFieldsLeftColAdditional</fullName>
@@ -5230,6 +5295,14 @@ If preferred, you can disable Gift Entry and instead use older Batch Gift Entry 
         <protected>true</protected>
         <shortDescription>Template landing screen text block</shortDescription>
         <value>A template is a reusable layout of fields for data entry. Edit a template by clicking the template name. Alternatively, create a new template or click any template's dropdown menu for more options. Any templates that are in use can't be deleted.</value>
+    </labels>
+    <labels>
+        <fullName>geBodyWidgetFields</fullName>
+        <categories>Gift Entry</categories>
+        <language>en_US</language>
+        <protected>true</protected>
+        <shortDescription>Field bundle body before list of fields</shortDescription>
+        <value>{0} field bundle includes the following fields: </value>
     </labels>
     <labels>
         <fullName>geButtonBuilderNavBackFormFields</fullName>
@@ -5579,11 +5652,11 @@ If preferred, you can disable Gift Entry and instead use older Batch Gift Entry 
         <value>Required field</value>
     </labels>
     <labels>
-        <fullName>geGauAllocationsBundle</fullName>
+        <fullName>commonGauAllocations</fullName>
         <categories>Gift Entry</categories>
         <language>en_US</language>
         <protected>true</protected>
-        <shortDescription>Name of GAU Allocations field bundle</shortDescription>
+        <shortDescription>Common label for GAU Allocations</shortDescription>
         <value>GAU Allocations</value>
     </labels>
     <labels>
@@ -5649,6 +5722,14 @@ If preferred, you can disable Gift Entry and instead use older Batch Gift Entry 
         <protected>true</protected>
         <shortDescription>Label for selecting fields to include as columns</shortDescription>
         <value>Select Fields to Display</value>
+    </labels>
+    <labels>
+        <fullName>geHeaderPaymentServices</fullName>
+        <categories>Gift Entry</categories>
+        <language>en_US</language>
+        <protected>true</protected>
+        <shortDescription>iFrame header for Payment Services information</shortDescription>
+        <value>Powered by {0}</value>
     </labels>
     <labels>
         <fullName>geHeaderEmptyFormSection</fullName>
@@ -5888,6 +5969,14 @@ If preferred, you can disable Gift Entry and instead use older Batch Gift Entry 
         <protected>true</protected>
         <shortDescription>Help text for Form Fields Field Label</shortDescription>
         <value>This shows the Object Group and target field API Name. You can edit the user-facing label below.</value>
+    </labels>
+    <labels>
+        <fullName>geHelpTextPaymentServices</fullName>
+        <categories>Gift Entry</categories>
+        <language>en_US</language>
+        <protected>true</protected>
+        <shortDescription>Temporary note about only being able to use Payment Services with single gifts</shortDescription>
+        <value>Note: This field bundle is only available for single gifts and will not show up when entering batches of gifts.</value>
     </labels>
     <labels>
         <fullName>geHelpTextHouseholdMapping</fullName>

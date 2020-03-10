@@ -546,6 +546,8 @@
         <members>UTIL_FeatureManagement_TEST</members>
         <members>UTIL_Finder</members>
         <members>UTIL_Finder_TEST</members>
+        <members>UTIL_FiscalYearInfo</members>
+        <members>UTIL_FiscalYearInfo_TEST</members>
         <members>UTIL_HtmlOutput_CTRL</members>
         <members>UTIL_HtmlOutput_TEST</members>
         <members>UTIL_IScheduled</members>
@@ -845,6 +847,7 @@
         <members>Address__c.Congressional_District__c</members>
         <members>Address__c.County_Name__c</members>
         <members>Address__c.Default_Address__c</members>
+        <members>Address__c.Exclude_from_Updates__c</members>
         <members>Address__c.Formula_MailingAddress__c</members>
         <members>Address__c.Formula_MailingStreetAddress__c</members>
         <members>Address__c.Geolocation__c</members>
@@ -857,6 +860,8 @@
         <members>Address__c.MailingState__c</members>
         <members>Address__c.MailingStreet2__c</members>
         <members>Address__c.MailingStreet__c</members>
+        <members>Address__c.NCOA_Evaluation_Date__c</members>
+        <members>Address__c.NCOA_Result_Code__c</members>
         <members>Address__c.Pre_Verification_Address__c</members>
         <members>Address__c.Seasonal_End_Day__c</members>
         <members>Address__c.Seasonal_End_Month__c</members>
@@ -865,6 +870,7 @@
         <members>Address__c.State_Lower_District__c</members>
         <members>Address__c.State_Upper_District__c</members>
         <members>Address__c.Verification_Status__c</members>
+        <members>Address__c.Verified_Date__c</members>
         <members>Address__c.Verified__c</members>
         <members>Allocation__c.Amount__c</members>
         <members>Allocation__c.Campaign__c</members>
@@ -1618,6 +1624,7 @@
         <members>RD_ErrorLegacyBatchJobCannotBeRun</members>
         <members>RD_ErrorMoreClosedWonOpportunitiesThanInstallments</members>
         <members>RD_ErrorNotEnoughClosedValueForFixedLength</members>
+        <members>RD_RefreshOppsContinueMessage</members>
         <members>REL_Create_New_Relationship</members>
         <members>REL_Former</members>
         <members>REL_No_Relationships</members>
@@ -1916,6 +1923,7 @@
         <members>campaignMemberStatusDefault</members>
         <members>campaignMemberStatusNonResponded</members>
         <members>campaignMemberStatusResponded</members>
+        <members>commonAmount</members>
         <members>commonAssistiveError</members>
         <members>commonAssistiveInfo</members>
         <members>commonAssistiveSuccess</members>
@@ -1923,17 +1931,24 @@
         <members>commonBack</members>
         <members>commonBatches</members>
         <members>commonCancel</members>
+        <members>commonCardType</members>
         <members>commonClone</members>
+        <members>commonCreditNumber</members>
         <members>commonDefaultValue</members>
         <members>commonDelete</members>
         <members>commonEdit</members>
         <members>commonError</members>
         <members>commonFieldLabel</members>
+        <members>commonGauAllocations</members>
+        <members>commonGeneralAccountUnit</members>
+        <members>commonMMYY</members>
         <members>commonNewGift</members>
         <members>commonNext</members>
         <members>commonNo</members>
         <members>commonNoItems</members>
         <members>commonOpen</members>
+        <members>commonPaymentServices</members>
+        <members>commonPercent</members>
         <members>commonReadMore</members>
         <members>commonRequired</members>
         <members>commonSave</members>
@@ -1989,6 +2004,7 @@
         <members>geAssistiveSectionUp</members>
         <members>geAssistiveShowMenu</members>
         <members>geAssistiveSpinner</members>
+        <members>geBodyAdvancedFieldMapping</members>
         <members>geBodyBatchDefaultValues</members>
         <members>geBodyBatchFieldBundleInfo</members>
         <members>geBodyBatchHeaderLeftCol</members>
@@ -1996,8 +2012,8 @@
         <members>geBodyBatchHeaderWarning</members>
         <members>geBodyEmptyFormSection</members>
         <members>geBodyFieldBundlesLeftCol</members>
-        <members>geBodyFormFieldsLeftCol</members>
         <members>geBodyFormFieldsDescLeftCol</members>
+        <members>geBodyFormFieldsLeftCol</members>
         <members>geBodyFormFieldsLeftColAdditional</members>
         <members>geBodyFormFieldsModalDeleteSection</members>
         <members>geBodyFormFieldsRightCol</members>
@@ -2010,6 +2026,7 @@
         <members>geBodyMatchingUpdatingDonation</members>
         <members>geBodyTemplateInfoLeftCol</members>
         <members>geBodyTemplatesTabDescription</members>
+        <members>geBodyWidgetFields</members>
         <members>geButtonBuilderNavBackFormFields</members>
         <members>geButtonBuilderNavBackTemplateInfo</members>
         <members>geButtonBuilderNavBatchHeader</members>
@@ -2052,7 +2069,6 @@
         <members>geErrorPageLevelMissingRequiredFields</members>
         <members>geErrorPageLevelMissingRequiredGroupFields</members>
         <members>geErrorRequiredField</members>
-        <members>geGauAllocationsBundle</members>
         <members>geHeaderAdvancedFormFields</members>
         <members>geHeaderBatchEnterInfo</members>
         <members>geHeaderBatchGiftEntry</members>
@@ -2077,6 +2093,7 @@
         <members>geHeaderNewSection</members>
         <members>geHeaderNewTemplate</members>
         <members>geHeaderPageLevelError</members>
+        <members>geHeaderPaymentServices</members>
         <members>geHeaderSingleGiftEntry</members>
         <members>geHeaderTemplateInfoLeftCol</members>
         <members>geHelpTextAccount1Mapping</members>
@@ -2091,6 +2108,7 @@
         <members>geHelpTextFormFieldsFieldCustomLabel</members>
         <members>geHelpTextFormFieldsFieldLabelLabel</members>
         <members>geHelpTextHouseholdMapping</members>
+        <members>geHelpTextPaymentServices</members>
         <members>geLabelCustomTableSelectedFields</members>
         <members>geLabelCustomTableSourceFields</members>
         <members>geLabelSectionName</members>
@@ -3439,6 +3457,7 @@
         <members>geFormWidget</members>
         <members>geFormWidgetAllocation</members>
         <members>geFormWidgetRowAllocation</members>
+        <members>geFormWidgetTokenizeCard</members>
         <members>geGiftEntryFormApp</members>
         <members>geHome</members>
         <members>geLabelService</members>
@@ -3452,6 +3471,7 @@
         <members>geTemplateBuilderSectionModalBody</members>
         <members>geTemplateBuilderService</members>
         <members>geTemplateBuilderTemplateInfo</members>
+        <members>geTemplateBuilderWidget</members>
         <members>geTemplates</members>
         <members>geWidgetService</members>
         <members>libsMoment</members>
