@@ -227,6 +227,7 @@ public with sharing class STG_InstallScript_TEST {
         Household_Naming_Settings__c householdNamingSettings = UTIL_CustomSettingsFacade.getOrgHouseholdNamingSettings();
         Allocations_Settings__c allocationsSettings = UTIL_CustomSettingsFacade.getOrgAllocationsSettings();
         Data_Import_Settings__c dataImportSettings = UTIL_CustomSettingsFacade.getOrgDataImportSettings();
+        Gift_Entry_Settings__c geSettings = UTIL_CustomSettingsFacade.getOrgGiftEntrySettings();
         Package_Settings__c pkgSettings = Package_Settings__c.getOrgDefaults();
 
         //If it's a new install we want to set the Household model by default
@@ -238,7 +239,7 @@ public with sharing class STG_InstallScript_TEST {
         System.assertEquals(householdAccountId, npe01Settings.npe01__HH_Account_RecordTypeID__c);
 
         System.assertEquals(HH_Households.NO_HOUSEHOLDS_PROCESSOR, npo02Settings.npo02__Household_Rules__c);
-        System.assertEquals(label.npo02.Household_Member_Contact_Role, npo02Settings.npo02__Household_Member_Contact_Role__c);
+        System.assertEquals(CAO_Constants.HH_MEMBER_CONTACT_ROLE, npo02Settings.npo02__Household_Member_Contact_Role__c);
         System.assertEquals(false, npo02Settings.npo02__Always_Rollup_to_Primary_Contact__c);
         System.assertEquals(true, npo02Settings.npo02__Enable_Opp_Rollup_Triggers__c);
         System.assertEquals(null, npo02Settings.npo02__Excluded_Account_Opp_Rectypes__c);
@@ -283,9 +284,13 @@ public with sharing class STG_InstallScript_TEST {
 
         System.assertEquals('HH_NameSpec',householdNamingSettings.Implementing_Class__c);
         System.assertEquals(365,allocationsSettings.Rollup_N_Day_Value__c);
+
         System.assertEquals(50,dataImportSettings.Batch_Size__c);
 
-        System.assertNotEquals(pkgSettings.Id, null);
+        System.assertEquals(UserInfo.getOrganizationId(), geSettings.SetupOwnerId);
+
+        System.assertNotEquals(pkgSettings.Id, null, 'A default PackageSettings record should have been created');
+
     }
 
     /*********************************************************************************************************

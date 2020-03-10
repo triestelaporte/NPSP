@@ -3,6 +3,8 @@ import getNamespaceWrapper from '@salesforce/apex/BDI_ManageAdvancedMappingCtrl.
 import { handleError } from 'c/utilTemplateBuilder';
 import { mutable } from 'c/utilCommon';
 import GeWidgetService from 'c/geWidgetService';
+import labelGeHeaderFieldBundles from '@salesforce/label/c.geHeaderFieldBundles';
+import geGauAllocationsBundle from '@salesforce/label/c.geGauAllocationsBundle';
 
 class GeTemplateBuilderService {
     fieldMappingByDevName = null;
@@ -116,7 +118,7 @@ class GeTemplateBuilderService {
             DeveloperName: 'geFormWidgetAllocation',
             MasterLabel: 'Allocations',
             Target_Object_Mapping_Dev_Name: 'Widgets',
-            Target_Field_Label: 'Allocations',
+            Target_Field_Label: geGauAllocationsBundle,
             Required: 'No',
             Element_Type: 'widget',
             Widget_Object_Mapping_Developer_Name: allocationWidgetDefinition.objectMappingDeveloperName,
@@ -125,7 +127,7 @@ class GeTemplateBuilderService {
 
         objectMappingByDevName.Widgets = {
             DeveloperName: 'Widgets',
-            MasterLabel: 'Widgets'
+            MasterLabel: labelGeHeaderFieldBundles
         };
 
         fieldMappingsByObjMappingDevName.Widgets = [

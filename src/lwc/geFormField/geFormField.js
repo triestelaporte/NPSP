@@ -1,10 +1,11 @@
 import {LightningElement, api, track, wire} from 'lwc';
-import {isNotEmpty, debouncify} from 'c/utilCommon';
+import {isNotEmpty, debouncify, isUndefined} from 'c/utilCommon';
 import GeFormService from 'c/geFormService';
 import GeLabelService from 'c/geLabelService';
 import {getObjectInfo} from "lightning/uiObjectInfoApi";
 import { fireEvent } from 'c/pubsubNoPageRef';
 import DI_DONATION_AMOUNT from '@salesforce/schema/DataImport__c.Donation_Amount__c';
+import DONATION_DONOR_FIELD from '@salesforce/schema/DataImport__c.Donation_Donor__c';
 
 const LOOKUP_TYPE = 'REFERENCE';
 const PICKLIST_TYPE = 'PICKLIST';
@@ -23,6 +24,7 @@ export default class GeFormField extends LightningElement {
     @track picklistValues = [];
     @track objectDescribeInfo;
     @track richTextValid = true;
+    @track _disabled = false;
     @api element;
     @api targetFieldName;
     _defaultValue = null;
@@ -41,22 +43,14 @@ export default class GeFormField extends LightningElement {
         this.dispatchEvent(evt);
 
         if (this.isLookup) {
-            const changeLookupEvent = new CustomEvent(
-                'changelookup',
+            const selectRecordEvent = new CustomEvent(
+                'lookuprecordselect',
                 { detail: event.detail });
-            this.dispatchEvent(changeLookupEvent);
+            this.dispatchEvent(selectRecordEvent);
         }
 
         if (this.isPicklist) {
-            const detail = {
-                value: this.value,
-                fieldApiName: this.element.fieldApiName
-            }
-
-            const changePicklistEvent = new CustomEvent(
-                'changepicklist',
-                { detail: detail });
-            this.dispatchEvent(changePicklistEvent);
+            this.handlePicklistChange();
         }
 
         if(this.isRichText) {
@@ -72,6 +66,15 @@ export default class GeFormField extends LightningElement {
 
     handleValueChange = debouncify(this.handleValueChangeSync.bind(this), DELAY);
 
+    handlePicklistChange() {
+        if (this.fieldApiName === DONATION_DONOR_FIELD.fieldApiName) {
+            const changeDonationDonorEvent = new CustomEvent(
+                'changedonationdonor',
+                {detail: {value: this.value}});
+            this.dispatchEvent(changeDonationDonorEvent);
+        }
+    }
+
     /**
      * Retrieve field metadata. Used to configure how fields are displayed on the form.
      */
@@ -83,17 +86,6 @@ export default class GeFormField extends LightningElement {
     }
 
     connectedCallback() {
-        if(isNotEmpty(this.targetFieldName)) {
-            // Construct an element object using the field name and mapping info
-            const required = this.fieldInfo.Is_Required || (this.element && this.element.required);
-            this.element = {
-                ...this.element,
-                label: this.fieldInfo.Target_Field_Label,
-                required,
-                dataImportFieldMappingDevNames: [this.targetFieldName]
-            };
-        }
-
         const { defaultValue, recordValue } = this.element;
 
         if(recordValue) {
@@ -106,6 +98,7 @@ export default class GeFormField extends LightningElement {
             // and no record value.
             this._defaultValue = defaultValue;
             this.value = defaultValue;
+            this.handlePicklistChange();
         }
     }
 
@@ -170,6 +163,16 @@ export default class GeFormField extends LightningElement {
     }
 
     @api
+    disable() {
+        this._disabled = true;
+    }
+
+    @api
+    enable() {
+        this._disabled = false;
+    }
+
+    @api
     get fieldAndValue() {
         let fieldAndValue = {};
 
@@ -194,6 +197,14 @@ export default class GeFormField extends LightningElement {
 
     get formatter() {
         return GeFormService.getNumberFormatterByDescribeType(this.fieldType);
+    }
+
+    get required() {
+        return (this.fieldInfo && this.fieldInfo.Is_Required) || (this.element && this.element.required);
+    }
+
+    get disabled() {
+        return this._disabled || (this.element && this.element.disabled);
     }
 
     get granularity() {
@@ -311,48 +322,71 @@ export default class GeFormField extends LightningElement {
     }
 
     /**
-     * Set the value of the field.
-     * @param value Value to set on the field.
-     */
-    // TODO This is a bit awkward, as we are essentially supporting two different shapes for data
-    // could use  refactor
+     * Load a value into the form field.
+     * @param data  An sObject potentially containing a value to load.
+     * */
     @api
     load(data) {
         let value;
         if (data.hasOwnProperty(this.sourceFieldAPIName)) {
-            if (data[this.sourceFieldAPIName].hasOwnProperty('value')) {
-                value = data[this.sourceFieldAPIName].value;
+            value = data[this.sourceFieldAPIName];
+            if (value === null || value.value === null) {
+                this.reset();
             } else {
-                value = data[this.sourceFieldAPIName];
-            }
-        } else if (data.value) {
-            value = data.value;
-        }
+                this.value = value.value || value;
 
-        if (value === null) {
-            this.reset();
-            return;
-        }
-
-        this.value = value;
-
-        if (this.isLookup) {
-            const lookup = this.template.querySelector('c-ge-form-field-lookup');
-
-            let displayValue;
-            const relationshipFieldName = this.sourceFieldAPIName.replace('__c', '__r');
-            if (data[relationshipFieldName] &&
-                data[relationshipFieldName]['Name']) {
-                displayValue = data[relationshipFieldName].Name;
-            } else if (data[this.sourceFieldAPIName]['displayValue']) {
-                displayValue = data[this.sourceFieldAPIName].displayValue;
-            } else if (data.displayValue) {
-                displayValue = data.displayValue;
+                if (this.isLookup) {
+                    this.loadLookUp(data, this.value);
+                }
             }
 
-            lookup.setSelected({value, displayValue});
+            if (this.sourceFieldAPIName === DI_DONATION_AMOUNT.fieldApiName) {
+                // fire event for reactive widget component containing the Data Import field API name and Value
+                // currently only used for the Donation Amount.
+                fireEvent(null, 'widgetData', {donationAmount: this.value});
+            }
+
+        } else if (!isUndefined(data.value)) {
+            // When the geFormField cmp is used inside of geFormWidgetAllocation,
+            // geFormWidgetAllocation selects the field cmp to load a value into manually,
+            // and passes an {value: <value>} object.  To support that case this block
+            // loads the value directly even though data does not have a property for
+            // this.sourceFieldAPIName
+           this.value = data.value;
+        } else {
+            // Property isn't defined.  Don't do anything.
+            return false;
         }
     }
+
+    /**
+     * Loads a value into a look-up field
+     * @param data An sObject potentially containing a value to load.
+     * @param value A form field value
+     */
+    loadLookUp(data, value) {
+        const lookup = this.template.querySelector('c-ge-form-field-lookup');
+
+        let displayValue;
+        const relationshipFieldName = this.sourceFieldAPIName.replace('__c', '__r');
+
+        if (data[relationshipFieldName] &&
+            data[relationshipFieldName]['Name']) {
+            displayValue = data[relationshipFieldName].Name;
+
+        } else if (data[this.sourceFieldAPIName] &&
+            data[this.sourceFieldAPIName]['displayValue']) {
+            displayValue = data[this.sourceFieldAPIName].displayValue;
+
+        } else if (data.displayValue) {
+            displayValue = data.displayValue;
+
+        }
+
+        lookup.setSelected({value, displayValue});
+
+    }
+
 
     @api
     reset() {
