@@ -67,6 +67,7 @@ export default class GeFormRenderer extends NavigationMixin(LightningElement) {
     @track version = '';
     @track formTemplateId;
 
+    paymentAuthorizationToken;
     erroredFields = [];
     CUSTOM_LABELS = { ...GeLabelService.CUSTOM_LABELS, messageLoading };
 
@@ -120,7 +121,7 @@ export default class GeFormRenderer extends NavigationMixin(LightningElement) {
 
     connectedCallback() {
         registerListener('widgetData', this.handleWidgetData, this);
-
+        registerListener('cardTokenized', this.handleReceiveCardToken, this);
         if (this.batchId) {
             // When the form is being used for Batch Gift Entry, the Form Template JSON
             // uses the @wire service below to retrieve the Template using the Template Id
@@ -227,6 +228,10 @@ export default class GeFormRenderer extends NavigationMixin(LightningElement) {
                 this.navigateToLandingPage();
             }
         }
+    }
+
+    handleReceiveCardToken(token) {
+        this.paymentAuthorizationToken = token;
     }
 
     handleSaveSingleGiftEntry(sectionsList,enableSave,toggle) {
